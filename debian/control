@@ -1,0 +1,14 @@
+Source: python-logni
+Section: net
+Priority: optional
+Build-Depends: cdbs, debhelper, python-setuptools, python-support
+Maintainer: Erik Brozek <erik@brozek.name>
+
+Package: python-logni
+Section: net
+XB-Python-Version: ${python:Versions}
+Depends: ${python:Depends}
+Conflicts: python2.4-logni
+Architecture: all
+Description: LogNI
+ Send messages to the aplication logger
