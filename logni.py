@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import hashlib, time, random, types, traceback, os, sys
+import logging
 
 class LogNI:
 
@@ -18,6 +19,26 @@ class LogNI:
 		self.__fd	= None
 		self.__charset	= 'utf8'
 
+		self.__logEntries = 0
+
+
+	def logentries( self, apiKey ):
+
+		# logentries 
+		try:
+			from logentries import LogentriesHandler
+		except Exception, emsg:
+			self.ni( 'logentries import error="%s"', emsg, ERR=4 )
+			return
+
+		self.__loge = logging.getLogger('logentries')
+		self.__loge.setLevel(logging.INFO)
+		# Note if you have set up the logentries handler in Django, the following line is not necessary
+		self.__loge.addHandler(LogentriesHandler( apiKey ))
+
+		self.__logEntries = 1
+
+
 	def file( self, logFile):
 
 		try:
@@ -27,6 +48,7 @@ class LogNI:
 			return 0
 
 		return 1
+
 
 	def mask( self, maskStr='' ):
 		
@@ -56,6 +78,24 @@ class LogNI:
 
 	def maxLen( self, maxLen=0):
 		self.__maxLen = maxLen
+
+
+	def __le( self, msg, mask ):
+		# logentries
+		if mask == 'INFO':
+			self.__loge.info( msg )
+
+		elif mask == 'WARN':
+			self.__loge.warning( msg )
+
+		elif mask == 'ERR':
+			self.__loge.error( msg )
+
+		elif mask == 'FATAL':
+			self.__loge.critical( msg )
+
+		elif mask == 'DEBUG':
+			self.__loge.debug( msg )
 
 
 	def ni( self, msg, params={}, offset=0, depth=0, color='', maxLen=0, **kw ):
@@ -106,10 +146,15 @@ class LogNI:
 			if self.__flush:
 				sys.stderr.flush()
 			
+		# logentries
+		if self.__logEntries:
+			self.__le( msg=msg, mask=mask )
 			
 		return { 'hash':hashStr }
 
+
 	# ---
+
 
 	def fatal( self, msg, params={}, offset=0, depth=0, color='', maxLen=0, level=4 ):
 		return self.ni( msg=msg, params=params, offset=offset, depth=depth, color=color, maxLen=maxLen, FATAL=level )
@@ -132,19 +177,22 @@ class LogNI:
 	err	= error
 
 
+log = LogNI()
+
 
 if __name__ == '__main__':
 
-	log = LogNI()
-
 	log.mask( 'ALL' )
 	log.stderr( 1 )
+
+	# https://logentries.com
+	log.logentries( '<YOUR_LOGENTRIES_KEY>' )
 	
 	log.ni(    'tests %s %s', (11, 22), INFO=3 )
 
-	log.critical( 'critical tests %s', {'a':1, 'b':2, 'c':3}, level=4 )
-	log.error( 'error tests %s', {'a':1, 'b':2, 'c':3}, level=3 )
-	log.warn(  'warning tests %s', {'a':1, 'b':2, 'c':3}, level=1 )
-	log.info(  'info tests %s', {'a':1, 'b':2, 'c':3}, level=1 )
-	log.debug( 'debug test %s', 3, level=1 )
+	log.critical( 'critical test ' )
+	log.error( 'error test %s', {'a':1, 'b':2, 'c':3}, level=3 )
+	log.warn(  'warning test %s', {'a':1, 'b':2, 'c':3}, level=1 )
+	log.info(  'info test %s', {'a':1, 'b':2, 'c':3}, level=1 )
+	log.debug( 'debug test %s', time.time(), level=1 )
 
