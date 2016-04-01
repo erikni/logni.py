@@ -1,8 +1,8 @@
 #!usr/bin/python
 # -*- coding: utf-8 -*-
 
-import hashlib, time, random, types, traceback, os, sys
-import logging
+import hashlib, time, random, types, traceback, os, sys, socket
+import logging, xmlrpclib
 
 class LogNI:
 
@@ -18,9 +18,14 @@ class LogNI:
 
 		self.__fd	= None
 		self.__charset	= 'utf8'
+		self.__hostname	= socket.gethostname()
 
-		self.__logEntries = 0
+		self.__environment = ''
+		self.__revision = ''
 
+		self.__logEntries=0
+		self.__logSiUX	= 0
+		
 
 	def logentries( self, apiKey ):
 
@@ -39,8 +44,28 @@ class LogNI:
 		self.__logEntries = 1
 
 
+	def siux( self, logIdent ):
+		
+		try:
+			self.__siux = xmlrpclib.ServerProxy( 'http://node.logni.net:3025/RPC2' )
+		except Exception, emsg:
+			self.ni( 'siux connect error="%s"', emsg, ERR=4 )
+			return
+
+		self.__siuxApiKey = logIdent		
+		self.__logSiUX = 1
+
+
+	def environment( self, environment='' ):
+		self.__environment = environment
+
+	def revision( self, revision='' ):
+		self.__revision = revision
+
+
 	def file( self, logFile):
 
+		# err: read file
 		try:
 			self.__fd = open( logFile, 'ab' )
 		except Exception, emsg:
@@ -51,10 +76,12 @@ class LogNI:
 
 
 	def mask( self, maskStr='' ):
-		
+	
+		# set mask ALL	
 		if maskStr == 'ALL':
 			maskStr = 'I1E1F1W1D1'
 
+		# err: incorrect mask
 		if len(maskStr) % 2 != 0:
 			raise ValueError( 'logni: incorrect mask="%s"' % (maskStr,) )
 
@@ -83,19 +110,19 @@ class LogNI:
 	def __le( self, msg, mask ):
 		# logentries
 		if mask == 'INFO':
-			self.__loge.info( msg )
+			return self.__loge.info( msg )
 
 		elif mask == 'WARN':
-			self.__loge.warning( msg )
+			return self.__loge.warning( msg )
 
 		elif mask == 'ERR':
-			self.__loge.error( msg )
+			return self.__loge.error( msg )
 
 		elif mask == 'FATAL':
-			self.__loge.critical( msg )
+			return self.__loge.critical( msg )
 
 		elif mask == 'DEBUG':
-			self.__loge.debug( msg )
+			return self.__loge.debug( msg )
 
 
 	def ni( self, msg, params={}, offset=0, depth=0, color='', maxLen=0, **kw ):
@@ -145,54 +172,109 @@ class LogNI:
 			sys.stderr.write( logMessage )
 			if self.__flush:
 				sys.stderr.flush()
+
 			
+		ret = { 'hash':hashStr }
+
 		# logentries
 		if self.__logEntries:
-			self.__le( msg=msg, mask=mask )
-			
-		return { 'hash':hashStr }
+			retLE = self.__le( msg=msg, mask=mask )
+			if retLE:
+				ret[ 'logentries' ] = retLE
+			del retLE
 
+		# siux
+		if self.__logSiUX:
+			__siuxParam = {
+				'os_hostname' 	: self.__hostname,
+				'os_hash'	: hashStr	,
+				'os_getpid'	: os.getpid()	,
+				'os_stack'	: stackInfo	,
+			}
+			if self.__revision:
+				__siuxParam[ 'revision' ] = self.__revision
+
+			if self.__environment:
+				__siuxParam[ 'environment' ] = self.__environment
+
+			__mask = mask.lower()
+			if __mask == 'warn':
+				__mask = 'warning'
+
+			ret[ 'siux' ] = self.__siux.logni.add( self.__siuxApiKey, logMessage,  __mask, level, __siuxParam )
+			del __siuxParam
+
+
+		return ret
 
 	# ---
 
+	def fatal( self, msg, params={}, level=4 ):
+		return self.ni( msg=msg, params=params, FATAL=level )
 
-	def fatal( self, msg, params={}, offset=0, depth=0, color='', maxLen=0, level=4 ):
-		return self.ni( msg=msg, params=params, offset=offset, depth=depth, color=color, maxLen=maxLen, FATAL=level )
+	def error( self, msg, params={}, level=4 ):
+		return self.ni( msg=msg, params=params, ERR=level )
 
-	def error( self, msg, params={}, offset=0, depth=0, color='', maxLen=0, level=4 ):
-		return self.ni( msg=msg, params=params, offset=offset, depth=depth, color=color, maxLen=maxLen, ERR=level )
+	def warn( self, msg, params={}, level=4 ):
+		return self.ni( msg=msg, params=params, WARN=level )
 
-	def warn( self, msg, params={}, offset=0, depth=0, color='', maxLen=0, level=4 ):
-		return self.ni( msg=msg, params=params, offset=offset, depth=depth, color=color, maxLen=maxLen, WARN=level )
+	def info( self, msg, params={}, level=4 ):
+		return self.ni( msg=msg, params=params, INFO=level )
 
-	def info( self, msg, params={}, offset=0, depth=0, color='', maxLen=0, level=4 ):
-		return self.ni( msg=msg, params=params, offset=offset, depth=depth, color=color, maxLen=maxLen, INFO=level )
-
-	def debug( self, msg, params={}, offset=0, depth=0, color='', maxLen=0, level=4 ):
-		return self.ni( msg=msg, params=params, offset=offset, depth=depth, color=color, maxLen=maxLen, DEBUG=level )
+	def debug( self, msg, params={}, level=4 ):
+		return self.ni( msg=msg, params=params, DEBUG=level )
 
 	# alias
 	critical= fatal
 	warning	= warn
 	err	= error
 
-
 log = LogNI()
+
 
 
 if __name__ == '__main__':
 
+	# init
 	log.mask( 'ALL' )
 	log.stderr( 1 )
 
-	# https://logentries.com
-	log.logentries( '<YOUR_LOGENTRIES_KEY>' )
-	
-	log.ni(    'tests %s %s', (11, 22), INFO=3 )
 
-	log.critical( 'critical test ' )
-	log.error( 'error test %s', {'a':1, 'b':2, 'c':3}, level=3 )
-	log.warn(  'warning test %s', {'a':1, 'b':2, 'c':3}, level=1 )
-	log.info(  'info test %s', {'a':1, 'b':2, 'c':3}, level=1 )
-	log.debug( 'debug test %s', time.time(), level=1 )
+	# https://www.eSiUX.com 
+	print "log.siux( '<YOUR_API_KEY>' )"
+	log.siux( '0221b86f3352e295ef756341b0137ead' )
+	print
+
+	# https://logentries.com
+	print "log.logentries( '<YOUR_LOGENTRIES_KEY>' )"
+	log.logentries( '<YOUR_LOGENTRIES_KEY>' )
+	print
+	
+
+	# logging
+	print "# log.ni( 'tests %s %s', (11, 22), INFO=3 )"
+	log.ni( 'tests %s %s', (11, 22), INFO=3 )
+	print
+
+
+	# alias method for log.ni()
+	print "# log.critical( 'critical message' )"
+	log.critical( 'critical message' )
+	print
+
+	print "# log.error( 'error message #%s', time.time(), level=4 )"
+	log.error( 'error message #%s', time.time(), level=4 )
+	print
+
+	print "# log.warning( 'warning message #%s', time.time(), level=3 )"
+	log.warning( 'warning message #%s', time.time(), level=3 )
+	print
+
+	print "# log.info( 'info message #%s', time.time(), level=2 )"
+	log.info( 'info message #%s', time.time(), level=2 )
+	print
+
+	print "# log.debug( 'debug message #%s', time.time(), level=1 )"
+	log.debug( 'debug message #%s', time.time(), level=1 )
+	print
 

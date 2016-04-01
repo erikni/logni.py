@@ -1,5 +1,24 @@
+python-logni (0.0.17) unstable; urgency=low
+
+  * add SiUX logging
+
+ -- Erik Brozek <erik@brozek.name>  Sat, 02 Apr 2016 00:53:29 +0200
+
+python-logni (0.0.16) unstable; urgency=low
+
+  * upload debian package to repository
+
+ -- Erik Brozek <erik@logni.net>  Fri, 01 Apr 2016 16:17:11 +0200
+
+python-logni (0.0.3) unstable; urgency=low
+
+  * integrate logentries.com
+
+ -- Erik Brozek <erik@logni.net>  Fri, 01 Apr 2016 15:39:41 +0200
+
 python-logni (0.0.2) unstable; urgency=low
 
   * dummy package
 
- -- Erik Brozek <erik@brozek.name>  Wed, 15 Jul 2015 14:54:12 +0200
+ -- Erik Brozek <erik@logni.net>  Wed, 15 Jul 2015 14:54:12 +0200
+
