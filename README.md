@@ -1,3 +1,5 @@
+ [ ![Download](https://api.bintray.com/packages/logni/deb/python-logni/images/download.svg) ](https://bintray.com/logni/deb/python-logni/_latestVersion)
+
 # logni
 Logging facility for Python
 
