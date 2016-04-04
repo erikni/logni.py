@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.org/Logni/logni.py.svg?branch=master)](https://travis-ci.org/Logni/logni.py)
  [ ![Download](https://api.bintray.com/packages/logni/deb/python-logni/images/download.svg) ](https://bintray.com/logni/deb/python-logni/_latestVersion)
 
 # logni
