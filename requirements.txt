@@ -1,0 +1,2 @@
+rollbar>=0.10.0
+Logentries>=0.15
