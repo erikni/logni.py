@@ -2,7 +2,7 @@ Source: python-logni
 Section: net
 Priority: optional
 Build-Depends: cdbs, debhelper, python-setuptools, python-support
-Maintainer: Erik Brozek <erik@brozek.name>
+Maintainer: Erik Brozek <erik@logni.net>
 
 Package: python-logni
 Section: net

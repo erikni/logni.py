@@ -1,7 +1,7 @@
 #!usr/bin/python
 # -*- coding: utf-8 -*-
 
-import hashlib, time, random, types, traceback, os, sys, socket
+import hashlib, time, random, types, traceback, os, sys, socket, os.path
 import logging, xmlrpclib
 
 class LogNI:
@@ -25,7 +25,18 @@ class LogNI:
 
 		self.__logEntries=0
 		self.__logSiUX	= 0
-		
+		self.__logRollbar=0
+	
+		__uname 	= os.uname()
+		self.__userAgent_os 		= __uname[0].lower()
+		self.__userAgent_deviceType	= 'other'
+		self.__userAgent_browserFamily	= __uname[3].lower()
+		self.__userAgent_browserVersion	= __uname[2].lower()
+
+		if os.path.isfile( '/etc/debian_version' ):
+			self.__userAgent_browserFamily 	= 'debian'
+			self.__userAgent_browserVersion = open( '/etc/debian_version' ).read().split('\n')[0]
+				
 
 	def logentries( self, apiKey ):
 
@@ -42,6 +53,19 @@ class LogNI:
 		self.__loge.addHandler(LogentriesHandler( apiKey ))
 
 		self.__logEntries = 1
+
+
+	def rollbar( self, apiKey ):
+
+		try:
+			import rollbar
+		except Exception, emsg:
+			self.ni( 'rollbar import error="%s"', emsg, ERR=4 )
+			return
+
+		self.__rollbar = rollbar.init( apiKey, self.__environment ) 
+
+		self.__logRollbar = 1
 
 
 	def siux( self, logIdent ):
@@ -149,9 +173,11 @@ class LogNI:
         	stackList = []
         	offset = (offset or self.__stackOffset or 0) + 1
         	limit  = (depth or self.__stackDepth) + offset
-        	for ( filename, line, func, text ) in traceback.extract_stack( limit=limit )[ : -offset ]:
+		lineNo = 0
+		filename = 'unknown'
+        	for ( filename, lineNo, func, text ) in traceback.extract_stack( limit=limit )[ : -offset ]:
                 	filename = filename.split( '/' )[ -1 ]
-                	lineInfo = "%s:%s():%s" % ( filename, func, line )
+                	lineInfo = "%s:%s():%s" % ( filename, func, lineNo )
                 	stackList.append( lineInfo )
         	stackInfo = ",".join(stackList)
 
@@ -183,13 +209,30 @@ class LogNI:
 				ret[ 'logentries' ] = retLE
 			del retLE
 
+		# rollbar
+		if self.__logRollbar:
+			self.__rollbar.report_message(\
+				message		= logMessage, 
+				level		= mask.lower(), 
+				request		= None, 
+				extra_data	= None, 
+				payload_data	= None
+			)
+
 		# siux
 		if self.__logSiUX:
 			__siuxParam = {
-				'os_hostname' 	: self.__hostname,
-				'os_hash'	: hashStr	,
-				'os_getpid'	: os.getpid()	,
-				'os_stack'	: stackInfo	,
+				'os_hostname' 			: self.__hostname		,
+				'os_hash'			: hashStr			,
+				'os_getpid'			: os.getpid()			,
+				'os_stack'			: stackInfo			,
+				'os_lineno'			: lineNo			,
+				'os_source'			: filename			,
+        			'userAgent_device' 		: 'pc'				,
+        			'userAgent_deviceType' 		: self.__userAgent_deviceType	,
+        			'userAgent_os'			: self.__userAgent_os		,
+        			'userAgent_browserFamily'	: self.__userAgent_browserFamily,
+        			'userAgent_browserVersion'	: self.__userAgent_browserVersion,
 			}
 			if self.__revision:
 				__siuxParam[ 'revision' ] = self.__revision
@@ -200,8 +243,12 @@ class LogNI:
 			__mask = mask.lower()
 			if __mask == 'warn':
 				__mask = 'warning'
-
+			elif __mask == 'err':
+				__mask = 'error'
+	
 			ret[ 'siux' ] = self.__siux.logni.add( self.__siuxApiKey, logMessage,  __mask, level, __siuxParam )
+			#print "logni.add", self.__siuxApiKey, logMessage,  __mask, level, __siuxParam,"->", ret[ 'siux' ]
+			
 			del __siuxParam
 
 
@@ -242,11 +289,11 @@ if __name__ == '__main__':
 
 	# https://www.eSiUX.com 
 	print "log.siux( '<YOUR_API_KEY>' )"
-	log.siux( '0221b86f3352e295ef756341b0137ead' )
+	log.siux( '<YOUR_SIUX_KEY>' )
 	print
 
 	# https://logentries.com
-	print "log.logentries( '<YOUR_LOGENTRIES_KEY>' )"
+	print "log.logentries( '<YOUR_API_KEY>' )"
 	log.logentries( '<YOUR_LOGENTRIES_KEY>' )
 	print
 	

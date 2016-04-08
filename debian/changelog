@@ -1,8 +1,20 @@
+python-logni (0.0.21) unstable; urgency=low
+
+  * add rollbar logging
+
+ -- Erik Brozek <erik@logni.net>  Fri, 08 Apr 2016 22:56:03 +0200
+
+python-logni (0.0.18) unstable; urgency=low
+
+  * add userAgent_* parameters (for SiUX logging)
+
+ -- Erik Brozek <erik@logni.net>  Thu, 07 Apr 2016 17:54:09 +0200
+
 python-logni (0.0.17) unstable; urgency=low
 
   * add SiUX logging
 
- -- Erik Brozek <erik@brozek.name>  Sat, 02 Apr 2016 00:53:29 +0200
+ -- Erik Brozek <erik@logni.net>  Sat, 02 Apr 2016 00:53:29 +0200
 
 python-logni (0.0.16) unstable; urgency=low
 
@@ -21,4 +33,6 @@ python-logni (0.0.2) unstable; urgency=low
   * dummy package
 
  -- Erik Brozek <erik@logni.net>  Wed, 15 Jul 2015 14:54:12 +0200
+
+
 
