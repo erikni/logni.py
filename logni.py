@@ -1,280 +1,447 @@
 #!usr/bin/python
 # -*- coding: utf-8 -*-
 
-import hashlib, time, random, types, traceback, os, sys, socket, os.path
-import logging, xmlrpclib
+"""
+logni is python library for event logging and application states
+"""
+
+import time
+import random
+import types
+import traceback
+import os
+import sys
+import logging
+
 
 class LogNI:
+	""" logni is python library for event logging and application states """
 
-	def __init__( self ):
-		
-		self.__stderr	= 0
-		self.__flush	= 1
-		self.__maxLen	= 1000
-		self.__strip	= 0
-		self.__stackOffset=0
-		self.__stackDepth= 1
-		self.__timeFormat= '%Y/%m/%d %H:%M:%S'
+	def __init__(self):
+		""" init """
 
-		self.__fd	= None
-		self.__charset	= 'utf8'
-		self.__hostname	= socket.gethostname()
+		self.debugMode = 0
 
-		self.__environment = ''
+		self.__mask = 'ALL'
+		self.__stderr = 0
+		self.__flush = 1
+		self.__maxLen = 1000
+		self.__strip = 0
+		self.__stackOffset = 0
+		self.__stackDepth = 1
+		self.__timeFormat = '%Y/%m/%d %H:%M:%S'
+
+		self.__fd = None
+		self.__charset = 'utf8'
+
+		self.__env = ''
 		self.__revision = ''
 
-		self.__logEntries=0
-		self.__logSiUX	= 0
-		self.__logRollbar=0
-	
-		__uname 	= os.uname()
-		self.__userAgent_os 		= __uname[0].lower()
-		self.__userAgent_deviceType	= 'other'
-		self.__userAgent_browserFamily	= __uname[3].lower()
-		self.__userAgent_browserVersion	= __uname[2].lower()
+		self.__logEntries = 0
+		self.__logRollbar = 0
+		self.__rollbar = None
+		self.__loge = None
 
-		if os.path.isfile( '/etc/debian_version' ):
-			self.__userAgent_browserFamily 	= 'debian'
-			self.__userAgent_browserVersion = open( '/etc/debian_version' ).read().split('\n')[0]
-				
+		# colors: https://getbootstrap.com/docs/4.1/components/alerts/
+		self.__logniColors = {\
+			'primary' : "#004085", # blue light
+			'secondary' : "#383d41", # seda
+			'success' : "#155724", # green light
+			'danger' : "#721c24", # ping light
+			'warning' : "#856404", # yellow light
+			'info' : "#0c5460", # blue-green light
+			'light' : "#818182", # svetle seda
+			'dark' : "#1b1e21"} # tmave seda
 
-	def logentries( self, apiKey ):
+		# severity
+		self.__logniMaskSeverity = {}
+		self.__logniSeverityColors = { \
+			'DEBUG' : "light",
+			'INFO' : "primary",
+			'WARN' : "warning",
+			'ERROR' : "danger",
+			'CRITICAL' : "danger"}
 
-		# logentries 
+		self.__logniMaskSeverityFull = ["DEBUG", "INFO", "WARN", "ERROR", "CRITICAL"]
+
+		# severity (sortname)
+		self.__logniMaskSeverityShort = []
+		for severityName in self.__logniMaskSeverityFull:
+			_short = severityName[:1]
+
+			self.__logniMaskSeverityShort.append(_short)
+			self.__logniMaskSeverity[_short] = 5
+
+			del _short
+
+		# default
+		self.mask('ALL')
+		self.stderr(True)
+		self.color(True)
+
+
+	def logentries(self, apiKey):
+		""" logentries """
+
+		if not apiKey:
+			self.ni('logentries: apikey must be input', ERR=4)
+			return 1
+
+		# logentries
 		try:
 			from logentries import LogentriesHandler
 		except Exception, emsg:
-			self.ni( 'logentries import error="%s"', emsg, ERR=4 )
-			return
+			self.ni('logentries import error="%s"', emsg, ERR=4)
+			return 1
 
 		self.__loge = logging.getLogger('logentries')
 		self.__loge.setLevel(logging.INFO)
 		# Note if you have set up the logentries handler in Django, the following line is not necessary
-		self.__loge.addHandler(LogentriesHandler( apiKey ))
+		self.__loge.addHandler(LogentriesHandler(apiKey))
 
 		self.__logEntries = 1
 
+		return 0
 
-	def rollbar( self, apiKey ):
+
+	def rollbar(self, apiKey):
+		""" rollbar """
+
+		if not apiKey:
+			self.ni('rollbar: apikey must be input', ERR=4)
+			return 1
 
 		try:
 			import rollbar
 		except Exception, emsg:
-			self.ni( 'rollbar import error="%s"', emsg, ERR=4 )
-			return
+			self.ni('rollbar import error="%s"', emsg, ERR=4)
+			return 1
 
-		self.__rollbar = rollbar.init( apiKey, self.__environment ) 
+		self.__rollbar = rollbar.init(apiKey, self.__env)
 
 		self.__logRollbar = 1
 
-
-	def siux( self, logIdent ):
-		
-		try:
-			self.__siux = xmlrpclib.ServerProxy( 'http://node.logni.net:3025/RPC2' )
-		except Exception, emsg:
-			self.ni( 'siux connect error="%s"', emsg, ERR=4 )
-			return
-
-		self.__siuxApiKey = logIdent		
-		self.__logSiUX = 1
+		return 0
 
 
-	def environment( self, environment='' ):
-		self.__environment = environment
+	def color(self, color=True):
+		""" color """
 
-	def revision( self, revision='' ):
+		pass
+	
+
+	def environment(self, env=''):
+		""" environment """
+
+		self.__env = env
+
+	env = environment
+
+
+	def revision(self, revision=''):
+		""" revision """
+
 		self.__revision = revision
 
 
-	def file( self, logFile):
+	def file(self, logFile):
+		""" file """
 
 		# err: read file
 		try:
-			self.__fd = open( logFile, 'ab' )
+			self.__fd = open(logFile, 'ab')
 		except Exception, emsg:
-			sys.stderr.write( 'logni: file="%s", open err="%s"', (logFile, emsg) )
+			sys.stderr.write('logni: file="%s", open err="%s"', (logFile, emsg))
+			return 1
+
+		return 0
+
+
+	def mask(self, mask='ALL'):
+		""" mask """
+
+		if not mask:
+			mask = 'ALL'
+
+		# log mask = ALL | OFF
+		retMask = self.__setMask(mask)
+		if retMask == 0:
 			return 0
 
-		return 1
-
-
-	def mask( self, maskStr='' ):
-	
-		# set mask ALL	
-		if maskStr == 'ALL':
-			maskStr = 'I1E1F1W1D1'
+		# len is wrong
+		lenMask = len(mask)
+		if lenMask < 2 or lenMask > 10:
+			return 1
 
 		# err: incorrect mask
-		if len(maskStr) % 2 != 0:
-			raise ValueError( 'logni: incorrect mask="%s"' % (maskStr,) )
+		if lenMask % 2 != 0:
+			raise ValueError('logni: incorrect mask="%s"' % (mask,))
 
-		for no in range( 0, len(maskStr), 2):
-			
-			logType	 = maskStr[ no   ]
-			logLevel = maskStr[ no+1 ]
-		
-			if not logLevel.isdigit():
-				raise ValueError( 'logni: logLevel="%s" must be integer' % (logLevel,) )
+		# set default LEVEL=0
+		self.__setMask('OFF')
+
+		# set severity
+		for no in range(0, lenMask, 2):
+
+			_len = mask[no]
+			_no = mask[no+1]
+
+			if not _no.isdigit():
+				raise ValueError('logni: logLevel="%s" must be integer' % (_no,))
+
+			self.__logniMaskSeverity[_len] = int(_no)
+			self.__debug('mask: len=%s, no=%s', (_len, _no))
+
+			del _len, _no
+	
+		self.__debug('mask: self.__logniMaskSeverity=%s', self.__logniMaskSeverity)
+		self.__mask = mask
+
+		return 0
 
 
-	def stderr( self, stderr=0):
+	def __setMask(self, mask='ALL'):
+
+		if not mask:
+			mask = 'ALL'
+
+		if mask == 'ALL':
+			priority = 1
+		elif mask == 'OFF':
+			priority = 5
+		else:
+			return 1
+
+		for severityShort in self.__logniMaskSeverityShort:
+			self.__logniMaskSeverity[severityShort] = priority
+
+		self.__debug('__setMask: self.__logniMaskSeverityShort=%s', self.__logniMaskSeverityShort)
+		self.__debug('__setMask: self.__logniMaskSeverity=%s', self.__logniMaskSeverity)
+
+		return 0
+
+
+
+	def stderr(self, stderr=0):
+		""" stderr """
+
 		self.__stderr = stderr
 
-	def flush( self, flush=0):
+	console = stderr
+
+
+	def flush(self, flush=0):
+		""" flush """
 		self.__flush = flush
 
-	def strip( self, strip=0):
+	def strip(self, strip=0):
+		""" strip """
 		self.__strip = strip
 
-	def maxLen( self, maxLen=0):
+	def maxLen(self, maxLen=0):
+		""" maxLen """
 		self.__maxLen = maxLen
 
 
-	def __le( self, msg, mask ):
-		# logentries
+	def __le(self, msg, mask):
+		""" logentries """
+
 		if mask == 'INFO':
-			return self.__loge.info( msg )
+			return self.__loge.info(msg)
 
 		elif mask == 'WARN':
-			return self.__loge.warning( msg )
+			return self.__loge.warning(msg)
 
-		elif mask == 'ERR':
-			return self.__loge.error( msg )
+		elif mask in ('ERR', 'ERROR'):
+			return self.__loge.error(msg)
 
-		elif mask == 'FATAL':
-			return self.__loge.critical( msg )
+		elif mask in ('CRITICAL', 'FATAL'):
+			return self.__loge.critical(msg)
 
-		elif mask == 'DEBUG':
-			return self.__loge.debug( msg )
+		elif mask in ('DEBUG', 'DBG'):
+			return self.__loge.debug(msg)
 
 
-	def ni( self, msg, params={}, offset=0, depth=0, color='', maxLen=0, **kw ):
+	def __logUse(self, severity='', priority=1):
+		""" use log ? """
 
-		mask, level = kw.iteritems().next()
-		logInfo = '%s%s' % (mask[0], level)
+		if not priority:
+			priority = 1
 
+		# mask=ALL
+		if self.__mask == 'ALL':
+			self.__debug('uselog: severity=%s, msg priority=%s >= mask=ALL -> msg log is VISIBLE',\
+				(severity, priority))
+
+			return 0
+
+		if severity[0] not in self.__logniMaskSeverity:
+			self.__debug('uselog: severity=%s not exist', severity)
+			return 1
+
+		# message hidden
+		_no = self.__logniMaskSeverity[severity[0]]
+		if priority < _no:
+			self.__debug('uselog: severity=%s, msg priority=%s < mask priority=%s -> msg log is HIDDEN',\
+				(severity, priority, _no))
+			return 1
+
+
+		# message visible
+		self.__debug('uselog: severity=%s, msg priority=%s >= mask priority=%s -> msg log is VISIBLE',\
+			(severity, priority, _no))
+
+		return 0
+
+
+	def ni(self, msg, params={}, offset=0, depth=0, color='', maxLen=0, **kw):
+		""" message """
+
+		severity, priority = kw.iteritems().next()
+		logInfo = '%s%s' % (severity[0], priority)
+		self.__debug('ni: severity=%s, priority=%s', (severity, priority))
+
+		# priority
+		if priority < 1:
+			priority = 1
+		elif priority > 4:
+			priority = 4
+	
+		# log use?
+		retUse = self.__logUse(severity, priority)
+		if retUse == 1:
+			return 1
+	
 		try:
 			msg = msg % params
 		except Exception, emsg:
 			logInfo	= '!!'
-			color	= 'red'
-			msg   	= '%s %s <%s>' % (msg, params, emsg)
-		
+			color = 'red'
+			msg = '%s %s <%s>' % (msg, params, emsg)
+
 		# unicode test
-		if type( msg ) == types.UnicodeType:
-			msg = msg.encode( self.__charset, 'ignore' )
-		
+		if type(msg) == types.UnicodeType:
+			msg = msg.encode(self.__charset, 'ignore')
+
 		# strip text
 		if self.__strip:
-			msg = msg.replace( '\n', ' ' ).strip()
+			msg = msg.replace('\n', ' ').strip()
+
+		# maxlen
+		msgLen = len(msg)
+		if self.__maxLen > 0:
+			if msgLen > self.__maxLen:
+				msg = msg[:self.__maxLen] + ' ...'
+				self.__debug('ni: msgLen=%s > global maxLen=%s -> because msg short', (msgLen, self.__maxLen))
+
+		if maxLen > 0:
+			if msgLen > maxLen:
+				msg = msg[:maxLen] + ' ...'
+				self.__debug('ni: msgLen=%s > local maxLen=%s -> because msg short', (msgLen, maxLen))
+
+		# color
+		# todo ...
 
 		# stack
-        	stackList = []
-        	offset = (offset or self.__stackOffset or 0) + 1
-        	limit  = (depth or self.__stackDepth) + offset
+		stackList = []
+		offset = (offset or self.__stackOffset or 0) + 1
+		limit = (depth or self.__stackDepth) + offset
 		lineNo = 0
 		filename = 'unknown'
-        	for ( filename, lineNo, func, text ) in traceback.extract_stack( limit=limit )[ : -offset ]:
-                	filename = filename.split( '/' )[ -1 ]
-                	lineInfo = "%s:%s():%s" % ( filename, func, lineNo )
-                	stackList.append( lineInfo )
-        	stackInfo = ",".join(stackList)
+		for (filename, lineNo, func, text) in traceback.extract_stack(limit=limit)[:-offset]:
+			filename = filename.split('/')[-1]
+			lineInfo = "%s:%s():%s" % (filename, func, lineNo)
+			stackList.append(lineInfo)
+		stackInfo = ",".join(stackList)
 
 		# message format
-		timeString 	= time.strftime( self.__timeFormat, time.localtime())
-		hashStr		= '%x' % random.randint(1,4294967295)
+		timeString = time.strftime(self.__timeFormat, time.localtime())
+		hashStr = '%x' % random.randint(1, 4294967295)
 
-		logMessage 	= "%s [%s] %s: %s [%s] {%s}\n" % (timeString, os.getpid(), logInfo, msg, hashStr, stackInfo)
+		logMessage = "%s [%s] %s: %s [%s] {%s}\n" % \
+			(timeString, os.getpid(), logInfo, msg, hashStr, stackInfo)
 
 		# file descriptor
 		if self.__fd:
-			self.__fd.write( logMessage )
+			self.__fd.write(logMessage)
 			if self.__flush:
 				sys.__fd.flush()
 
 		# stderr
 		if self.__stderr:
-			sys.stderr.write( logMessage )
+			sys.stderr.write(logMessage)
 			if self.__flush:
 				sys.stderr.flush()
 
-			
-		ret = { 'hash':hashStr }
+
+		ret = {'hash':hashStr}
 
 		# logentries
 		if self.__logEntries:
-			retLE = self.__le( msg=msg, mask=mask )
+			retLE = self.__le(msg=msg, mask=severity)
 			if retLE:
-				ret[ 'logentries' ] = retLE
+				ret['logentries'] = retLE
 			del retLE
 
 		# rollbar
 		if self.__logRollbar:
-			self.__rollbar.report_message(\
-				message		= logMessage, 
-				level		= mask.lower(), 
-				request		= None, 
-				extra_data	= None, 
-				payload_data	= None
-			)
-
-		# siux
-		if self.__logSiUX:
-			__siuxParam = {
-				'os_hostname' 			: self.__hostname		,
-				'os_hash'			: hashStr			,
-				'os_getpid'			: os.getpid()			,
-				'os_stack'			: stackInfo			,
-				'os_lineno'			: lineNo			,
-				'os_source'			: filename			,
-        			'userAgent_device' 		: 'pc'				,
-        			'userAgent_deviceType' 		: self.__userAgent_deviceType	,
-        			'userAgent_os'			: self.__userAgent_os		,
-        			'userAgent_browserFamily'	: self.__userAgent_browserFamily,
-        			'userAgent_browserVersion'	: self.__userAgent_browserVersion,
-			}
-			if self.__revision:
-				__siuxParam[ 'revision' ] = self.__revision
-
-			if self.__environment:
-				__siuxParam[ 'environment' ] = self.__environment
-
-			__mask = mask.lower()
-			if __mask == 'warn':
-				__mask = 'warning'
-			elif __mask == 'err':
-				__mask = 'error'
-	
-			ret[ 'siux' ] = self.__siux.logni.add( self.__siuxApiKey, logMessage,  __mask, level, __siuxParam )
-			#print "logni.add", self.__siuxApiKey, logMessage,  __mask, level, __siuxParam,"->", ret[ 'siux' ]
-			
-			del __siuxParam
-
+			self.__rollbar.report_message(message=logMessage, level=severity.lower(), request=None,\
+				extra_data=None, payload_data=None)
 
 		return ret
 
 	# ---
 
-	def fatal( self, msg, params={}, level=4 ):
-		return self.ni( msg=msg, params=params, FATAL=level )
+	def fatal(self, msg, params={}, priority=4):
+		""" fatal """
 
-	def error( self, msg, params={}, level=4 ):
-		return self.ni( msg=msg, params=params, ERR=level )
+		return self.ni(msg=msg, params=params, CRITICAL=priority)
 
-	def warn( self, msg, params={}, level=4 ):
-		return self.ni( msg=msg, params=params, WARN=level )
+	critical = fatal
 
-	def info( self, msg, params={}, level=4 ):
-		return self.ni( msg=msg, params=params, INFO=level )
 
-	def debug( self, msg, params={}, level=4 ):
-		return self.ni( msg=msg, params=params, DEBUG=level )
+	def error(self, msg, params={}, priority=4):
+		""" error """
 
-	# alias
-	critical= fatal
-	warning	= warn
-	err	= error
+		return self.ni(msg=msg, params=params, ERR=priority)
+
+	err = error
+
+
+	def warn(self, msg, params={}, priority=4):
+		""" warn """
+		return self.ni(msg=msg, params=params, WARN=priority)
+
+	warning = warn
+
+
+	def info(self, msg, params={}, priority=4):
+		""" info """
+
+		return self.ni(msg=msg, params=params, INFO=priority)
+
+	informational = info
+
+
+	def debug(self, msg, params={}, priority=4):
+		""" debug """
+
+		return self.ni(msg=msg, params=params, DEBUG=priority)
+
+	dbg = debug
+
+
+	def __debug(self, msg, val):
+
+		if self.debugMode:
+			if val:
+				print 'DEBUG:', msg % val
+			else:
+				print 'DEBUG:', msg
+
+		return
+
+
 
 log = LogNI()
 
@@ -282,46 +449,60 @@ log = LogNI()
 
 if __name__ == '__main__':
 
-	# init
-	log.mask( 'ALL' )
-	log.stderr( 1 )
-
-
-	# https://www.eSiUX.com 
-	print "log.siux( '<YOUR_API_KEY>' )"
-	log.siux( '<YOUR_SIUX_KEY>' )
 	print
+
+	print "set debug mode"
+	log.debugMode = 1
+	print
+
+
+	# init
+	log.mask('I3E1C1W2')
+	log.stderr(1)
+	print
+
 
 	# https://logentries.com
-	print "log.logentries( '<YOUR_API_KEY>' )"
-	log.logentries( '<YOUR_LOGENTRIES_KEY>' )
+	print "log.logentries( '<YOUR_API_KEY>')"
+	log.logentries('<YOUR_LOGENTRIES_KEY>')
 	print
-	
+
 
 	# logging
-	print "# log.ni( 'tests %s %s', (11, 22), INFO=3 )"
-	log.ni( 'tests %s %s', (11, 22), INFO=3 )
+	print "# log.ni('tests %s %s', (11, 22), INFO=3)"
+	log.ni('tests %s %s', (11, 22), INFO=3)
 	print
 
 
 	# alias method for log.ni()
-	print "# log.critical( 'critical message' )"
-	log.critical( 'critical message' )
+	print "# log.critical('critical message')"
+	log.critical('critical message')
 	print
 
-	print "# log.error( 'error message #%s', time.time(), level=4 )"
-	log.error( 'error message #%s', time.time(), level=4 )
+
+	print "# log.error('error message #%s', time.time(), priority=4)"
+	log.error('error message #%s', time.time(), priority=4)
 	print
 
-	print "# log.warning( 'warning message #%s', time.time(), level=3 )"
-	log.warning( 'warning message #%s', time.time(), level=3 )
+
+	print "# log.warning('warning message #%s', time.time(), priority=3)"
+	log.warning('warning message #%s', time.time(), priority=3)
 	print
 
-	print "# log.info( 'info message #%s', time.time(), level=2 )"
-	log.info( 'info message #%s', time.time(), level=2 )
+
+	print "# log.info('info message #%s', time.time(), priority=2)"
+	log.info('info message #%s', time.time(), priority=2)
 	print
 
-	print "# log.debug( 'debug message #%s', time.time(), level=1 )"
-	log.debug( 'debug message #%s', time.time(), level=1 )
+
+	print "# log.debug('debug message #%s', time.time(), priority=1)"
+	log.debug('debug message #%s', time.time(), priority=1)
+	print
+
+	print "# log.maxLen(5) "
+	log.maxLen(5)
+
+	print "# log.info('very loooong meeeesage', time.time(), priority=4)"
+	print log.info('very loooong meeeesage #%s', time.time(), priority=4)
 	print
 
