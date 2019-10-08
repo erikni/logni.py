@@ -4,10 +4,10 @@
 """
  GNU General Public License v3.0
 
- Permissions of this strong copyleft license are conditioned on making 
- available complete source code of licensed works and modifications, 
- which include larger works using a licensed work, under the same license. 
- Copyright and license notices must be preserved. Contributors provide 
+ Permissions of this strong copyleft license are conditioned on making
+ available complete source code of licensed works and modifications,
+ which include larger works using a licensed work, under the same license.
+ Copyright and license notices must be preserved. Contributors provide
  an express grant of patent rights.
 
  see all: https://github.com/erikni/logni.py/blob/master/LICENSE
@@ -23,10 +23,10 @@ import types
 import traceback
 import os
 import sys
-import logging
+#import logging
 
 
-class LogNI:
+class LogNI(object):
 	""" logni is python library for event logging and application states """
 
 	def __init__(self):
@@ -43,16 +43,16 @@ class LogNI:
 		self.__stackDepth = 1
 		self.__timeFormat = '%Y/%m/%d %H:%M:%S'
 
-		self.__fd = None
+		self.__filed = None
 		self.__charset = 'utf8'
 
 		self.__env = ''
 		self.__revision = ''
 
-		self.__logEntries = 0
-		self.__logRollbar = 0
-		self.__rollbar = None
-		self.__loge = None
+		#self.__logEntries = 0
+		#self.__logRollbar = 0
+		#self.__rollbar = None
+		#self.__loge = None
 
 		# colors: https://getbootstrap.com/docs/4.1/components/alerts/
 		self.__logniColors = {\
@@ -92,55 +92,55 @@ class LogNI:
 		self.color(True)
 
 
-	def logentries(self, apiKey):
-		""" logentries """
+	#def logentries(self, apiKey):
+	#	""" logentries """
+	#
+	#	if not apiKey:
+	#		self.ni('logentries: apikey must be input', ERR=4)
+	#		return 1
+	#
+	#	# logentries
+	#	try:
+	#		from logentries import LogentriesHandler
+	#	except Exception, emsg:
+	#		self.ni('logentries import error="%s"', emsg, ERR=4)
+	#		return 1
+	#
+	#	self.__loge = logging.getLogger('logentries')
+	#	self.__loge.setLevel(logging.INFO)
+	#	# Note if you have set up the logentries handler in Django, the following line is not necessary
+	#	self.__loge.addHandler(LogentriesHandler(apiKey))
+	#
+	#	self.__logEntries = 1
+	#
+	#	return 0
 
-		if not apiKey:
-			self.ni('logentries: apikey must be input', ERR=4)
-			return 1
 
-		# logentries
-		try:
-			from logentries import LogentriesHandler
-		except Exception, emsg:
-			self.ni('logentries import error="%s"', emsg, ERR=4)
-			return 1
-
-		self.__loge = logging.getLogger('logentries')
-		self.__loge.setLevel(logging.INFO)
-		# Note if you have set up the logentries handler in Django, the following line is not necessary
-		self.__loge.addHandler(LogentriesHandler(apiKey))
-
-		self.__logEntries = 1
-
-		return 0
-
-
-	def rollbar(self, apiKey):
-		""" rollbar """
-
-		if not apiKey:
-			self.ni('rollbar: apikey must be input', ERR=4)
-			return 1
-
-		try:
-			import rollbar
-		except Exception, emsg:
-			self.ni('rollbar import error="%s"', emsg, ERR=4)
-			return 1
-
-		self.__rollbar = rollbar.init(apiKey, self.__env)
-
-		self.__logRollbar = 1
-
-		return 0
+	#def rollbar(self, apiKey):
+	#	""" rollbar """
+	#
+	#	if not apiKey:
+	#		self.ni('rollbar: apikey must be input', ERR=4)
+	#		return 1
+	#
+	#	try:
+	#		import rollbar
+	#	except Exception, emsg:
+	#		self.ni('rollbar import error="%s"', emsg, ERR=4)
+	#		return 1
+	#
+	#	self.__rollbar = rollbar.init(apiKey, self.__env)
+	#
+	#	self.__logRollbar = 1
+	#
+	#	return 0
 
 
 	def color(self, color=True):
 		""" color """
 
 		pass
-	
+
 
 	def environment(self, env=''):
 		""" environment """
@@ -161,7 +161,7 @@ class LogNI:
 
 		# err: read file
 		try:
-			self.__fd = open(logFile, 'ab')
+			self.__filed = open(logFile, 'ab')
 		except Exception, emsg:
 			sys.stderr.write('logni: file="%s", open err="%s"', (logFile, emsg))
 			return 1
@@ -205,7 +205,7 @@ class LogNI:
 			self.__debug('mask: len=%s, no=%s', (_len, _no))
 
 			del _len, _no
-	
+
 		self.__debug('mask: self.__logniMaskSeverity=%s', self.__logniMaskSeverity)
 		self.__mask = mask
 
@@ -255,23 +255,23 @@ class LogNI:
 		self.__maxLen = maxLen
 
 
-	def __le(self, msg, mask):
-		""" logentries """
-
-		if mask == 'INFO':
-			return self.__loge.info(msg)
-
-		elif mask == 'WARN':
-			return self.__loge.warning(msg)
-
-		elif mask in ('ERR', 'ERROR'):
-			return self.__loge.error(msg)
-
-		elif mask in ('CRITICAL', 'FATAL'):
-			return self.__loge.critical(msg)
-
-		elif mask in ('DEBUG', 'DBG'):
-			return self.__loge.debug(msg)
+	#def __le(self, msg, mask):
+	#	""" logentries """
+	#
+	#	if mask == 'INFO':
+	#		return self.__loge.info(msg)
+	#
+	#	elif mask == 'WARN':
+	#		return self.__loge.warning(msg)
+	#
+	#	elif mask in ('ERR', 'ERROR'):
+	#		return self.__loge.error(msg)
+	#
+	#	elif mask in ('CRITICAL', 'FATAL'):
+	#		return self.__loge.critical(msg)
+	#
+	#	elif mask in ('DEBUG', 'DBG'):
+	#		return self.__loge.debug(msg)
 
 
 	def __logUse(self, severity='', priority=1):
@@ -306,7 +306,7 @@ class LogNI:
 		return 0
 
 
-	def ni(self, msg, params={}, offset=0, depth=0, color='', maxLen=0, **kw):
+	def ni(self, msg, params={}, offset=0, depth=0, maxLen=0, **kw):
 		""" message """
 
 		severity, priority = kw.iteritems().next()
@@ -318,21 +318,22 @@ class LogNI:
 			priority = 1
 		elif priority > 4:
 			priority = 4
-	
+
 		# log use?
 		retUse = self.__logUse(severity, priority)
 		if retUse == 1:
 			return 1
-	
+
 		try:
 			msg = msg % params
 		except Exception, emsg:
 			logInfo	= '!!'
-			color = 'red'
+			#color = 'red'
 			msg = '%s %s <%s>' % (msg, params, emsg)
 
 		# unicode test
-		if type(msg) == types.UnicodeType:
+		#if type(msg) == types.UnicodeType:
+		if isinstance(msg, types.UnicodeType):
 			msg = msg.encode(self.__charset, 'ignore')
 
 		# strip text
@@ -364,6 +365,7 @@ class LogNI:
 			filename = filename.split('/')[-1]
 			lineInfo = "%s:%s():%s" % (filename, func, lineNo)
 			stackList.append(lineInfo)
+			text = None
 		stackInfo = ",".join(stackList)
 
 		# message format
@@ -374,10 +376,10 @@ class LogNI:
 			(timeString, os.getpid(), logInfo, msg, hashStr, stackInfo)
 
 		# file descriptor
-		if self.__fd:
-			self.__fd.write(logMessage)
+		if self.__filed:
+			self.__filed.write(logMessage)
 			if self.__flush:
-				sys.__fd.flush()
+				self.__filed.flush()
 
 		# stderr
 		if self.__stderr:
@@ -389,22 +391,22 @@ class LogNI:
 		ret = {'hash':hashStr}
 
 		# logentries
-		if self.__logEntries:
-			retLE = self.__le(msg=msg, mask=severity)
-			if retLE:
-				ret['logentries'] = retLE
-			del retLE
+		#if self.__logEntries:
+		#	retLE = self.__le(msg=msg, mask=severity)
+		#	if retLE:
+		#		ret['logentries'] = retLE
+		#	del retLE
 
 		# rollbar
-		if self.__logRollbar:
-			self.__rollbar.report_message(message=logMessage, level=severity.lower(), request=None,\
-				extra_data=None, payload_data=None)
+		#if self.__logRollbar:
+		#	self.__rollbar.report_message(message=logMessage, level=severity.lower(), request=None,\
+		#		extra_data=None, payload_data=None)
 
 		return ret
 
 	# ---
 
-	def fatal(self, msg, params={}, priority=4):
+	def fatal(self, msg, params, priority=4):
 		""" fatal """
 
 		return self.ni(msg=msg, params=params, CRITICAL=priority)
@@ -412,7 +414,7 @@ class LogNI:
 	critical = fatal
 
 
-	def error(self, msg, params={}, priority=4):
+	def error(self, msg, params, priority=4):
 		""" error """
 
 		return self.ni(msg=msg, params=params, ERR=priority)
@@ -420,14 +422,14 @@ class LogNI:
 	err = error
 
 
-	def warn(self, msg, params={}, priority=4):
+	def warn(self, msg, params, priority=4):
 		""" warn """
 		return self.ni(msg=msg, params=params, WARN=priority)
 
 	warning = warn
 
 
-	def info(self, msg, params={}, priority=4):
+	def info(self, msg, params, priority=4):
 		""" info """
 
 		return self.ni(msg=msg, params=params, INFO=priority)
@@ -435,7 +437,7 @@ class LogNI:
 	informational = info
 
 
-	def debug(self, msg, params={}, priority=4):
+	def debug(self, msg, params, priority=4):
 		""" debug """
 
 		return self.ni(msg=msg, params=params, DEBUG=priority)
@@ -455,66 +457,63 @@ class LogNI:
 
 
 
-log = LogNI()
-
-
-
 if __name__ == '__main__':
+
+	logni = LogNI()
 
 	print
 
 	print "set debug mode"
-	log.debugMode = 1
+	logni.debugMode = 1
 	print
 
 
 	# init
-	log.mask('I3E1C1W2')
-	log.stderr(1)
+	logni.mask('I3E1C1W2')
+	logni.stderr(1)
 	print
 
 
 	# https://logentries.com
-	print "log.logentries( '<YOUR_API_KEY>')"
-	log.logentries('<YOUR_LOGENTRIES_KEY>')
-	print
+	#print "logni.logentries( '<YOUR_API_KEY>')"
+	#logni.logentries('<YOUR_LOGENTRIES_KEY>')
+	#print
 
 
 	# logging
 	print "# log.ni('tests %s %s', (11, 22), INFO=3)"
-	log.ni('tests %s %s', (11, 22), INFO=3)
+	logni.ni('tests %s %s', (11, 22), INFO=3)
 	print
 
 
 	# alias method for log.ni()
 	print "# log.critical('critical message')"
-	log.critical('critical message')
+	logni.critical('critical message', ())
 	print
 
 
 	print "# log.error('error message #%s', time.time(), priority=4)"
-	log.error('error message #%s', time.time(), priority=4)
+	logni.error('error message #%s', time.time(), priority=4)
 	print
 
 
 	print "# log.warning('warning message #%s', time.time(), priority=3)"
-	log.warning('warning message #%s', time.time(), priority=3)
+	logni.warning('warning message #%s', time.time(), priority=3)
 	print
 
 
 	print "# log.info('info message #%s', time.time(), priority=2)"
-	log.info('info message #%s', time.time(), priority=2)
+	logni.info('info message #%s', time.time(), priority=2)
 	print
 
 
 	print "# log.debug('debug message #%s', time.time(), priority=1)"
-	log.debug('debug message #%s', time.time(), priority=1)
+	logni.debug('debug message #%s', time.time(), priority=1)
 	print
 
 	print "# log.maxLen(5) "
-	log.maxLen(5)
+	logni.maxLen(5)
 
 	print "# log.info('very loooong meeeesage', time.time(), priority=4)"
-	print log.info('very loooong meeeesage #%s', time.time(), priority=4)
+	print logni.info('very loooong meeeesage #%s', time.time(), priority=4)
 	print
-
