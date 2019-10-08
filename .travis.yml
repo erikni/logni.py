@@ -12,9 +12,9 @@ install:
 
 # command to run tests
 script:
-  - echo "pylint src/logni.py ... "
-  - pylint logni.py
+  - echo "pylint --errors-only src/logni.py ... "
+  - pylint --errors-only src/logni.py
 
   - echo "run logni.py ... "
-  - python logni.py
+  - python src/logni.py
 

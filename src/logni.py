@@ -26,8 +26,8 @@ import sys
 #import logging
 
 
-class LogNI(object):
-	""" logni is python library for event logging and application states """
+class Logni(object):
+	""" logni object """
 
 	def __init__(self):
 		""" init """
@@ -43,7 +43,7 @@ class LogNI(object):
 		self.__stackDepth = 1
 		self.__timeFormat = '%Y/%m/%d %H:%M:%S'
 
-		self.__filed = None
+		self.__fd = None
 		self.__charset = 'utf8'
 
 		self.__env = ''
@@ -56,23 +56,23 @@ class LogNI(object):
 
 		# colors: https://getbootstrap.com/docs/4.1/components/alerts/
 		self.__logniColors = {\
-			'primary' : "#004085", # blue light
-			'secondary' : "#383d41", # seda
-			'success' : "#155724", # green light
-			'danger' : "#721c24", # ping light
-			'warning' : "#856404", # yellow light
-			'info' : "#0c5460", # blue-green light
-			'light' : "#818182", # svetle seda
-			'dark' : "#1b1e21"} # tmave seda
+			'primary':"#004085", # blue light
+			'secondary':"#383d41", # seda
+			'success':"#155724", # green light
+			'danger':"#721c24", # ping light
+			'warning':"#856404", # yellow light
+			'info':"#0c5460", # blue-green light
+			'light':"#818182", # svetle seda
+			'dark':"#1b1e21"} # tmave seda
 
 		# severity
 		self.__logniMaskSeverity = {}
 		self.__logniSeverityColors = { \
-			'DEBUG' : "light",
-			'INFO' : "primary",
-			'WARN' : "warning",
-			'ERROR' : "danger",
-			'CRITICAL' : "danger"}
+			'DEBUG':"light",
+			'INFO':"primary",
+			'WARN':"warning",
+			'ERROR':"danger",
+			'CRITICAL':"danger"}
 
 		self.__logniMaskSeverityFull = ["DEBUG", "INFO", "WARN", "ERROR", "CRITICAL"]
 
@@ -82,7 +82,7 @@ class LogNI(object):
 			_short = severityName[:1]
 
 			self.__logniMaskSeverityShort.append(_short)
-			self.__logniMaskSeverity[_short] = 5
+			self.__logniMaskSeverity[_short] = self.__setPriority(5)
 
 			del _short
 
@@ -92,7 +92,7 @@ class LogNI(object):
 		self.color(True)
 
 
-	#def logentries(self, apiKey):
+	# def logentries(self, apiKey):
 	#	""" logentries """
 	#
 	#	if not apiKey:
@@ -102,7 +102,7 @@ class LogNI(object):
 	#	# logentries
 	#	try:
 	#		from logentries import LogentriesHandler
-	#	except Exception, emsg:
+	#	except BaseException, emsg:
 	#		self.ni('logentries import error="%s"', emsg, ERR=4)
 	#		return 1
 	#
@@ -116,7 +116,7 @@ class LogNI(object):
 	#	return 0
 
 
-	#def rollbar(self, apiKey):
+	# def rollbar(self, apiKey):
 	#	""" rollbar """
 	#
 	#	if not apiKey:
@@ -125,7 +125,7 @@ class LogNI(object):
 	#
 	#	try:
 	#		import rollbar
-	#	except Exception, emsg:
+	#	except BaseException, emsg:
 	#		self.ni('rollbar import error="%s"', emsg, ERR=4)
 	#		return 1
 	#
@@ -139,13 +139,15 @@ class LogNI(object):
 	def color(self, color=True):
 		""" color """
 
-		pass
+		# todo: code
+		self.__debug('color=%s', color)
 
 
 	def environment(self, env=''):
 		""" environment """
 
 		self.__env = env
+		self.__debug('environment=%s', env)
 
 	env = environment
 
@@ -154,6 +156,7 @@ class LogNI(object):
 		""" revision """
 
 		self.__revision = revision
+		self.__debug('revision=%s', revision)
 
 
 	def file(self, logFile):
@@ -161,10 +164,12 @@ class LogNI(object):
 
 		# err: read file
 		try:
-			self.__filed = open(logFile, 'ab')
-		except Exception, emsg:
-			sys.stderr.write('logni: file="%s", open err="%s"', (logFile, emsg))
+			self.__fd = open(logFile, 'ab')
+		except BaseException, emsg:
+			self.__debug('file="%s", err="%s"', (logFile, emsg))
 			return 1
+
+		self.__debug('file=%s', logFile)
 
 		return 0
 
@@ -172,7 +177,10 @@ class LogNI(object):
 	def mask(self, mask='ALL'):
 		""" mask """
 
+		self.__debug('mask=%s', mask)
+
 		if not mask:
+			self.__debug('mask=ALL')
 			mask = 'ALL'
 
 		# log mask = ALL | OFF
@@ -183,6 +191,7 @@ class LogNI(object):
 		# len is wrong
 		lenMask = len(mask)
 		if lenMask < 2 or lenMask > 10:
+			self.__debug('mask=%s: error len=%s', (mask, lenMask))
 			return 1
 
 		# err: incorrect mask
@@ -196,15 +205,12 @@ class LogNI(object):
 		for no in range(0, lenMask, 2):
 
 			_len = mask[no]
-			_no = mask[no+1]
+			_priority = self.__setPriority(mask[no+1])
 
-			if not _no.isdigit():
-				raise ValueError('logni: logLevel="%s" must be integer' % (_no,))
+			self.__logniMaskSeverity[_len] = _priority
+			self.__debug('mask: len=%s, priority=%s', (_len, _priority))
 
-			self.__logniMaskSeverity[_len] = int(_no)
-			self.__debug('mask: len=%s, no=%s', (_len, _no))
-
-			del _len, _no
+			del _len, _priority
 
 		self.__debug('mask: self.__logniMaskSeverity=%s', self.__logniMaskSeverity)
 		self.__mask = mask
@@ -213,6 +219,7 @@ class LogNI(object):
 
 
 	def __setMask(self, mask='ALL'):
+		""" set mask """
 
 		if not mask:
 			mask = 'ALL'
@@ -225,7 +232,7 @@ class LogNI(object):
 			return 1
 
 		for severityShort in self.__logniMaskSeverityShort:
-			self.__logniMaskSeverity[severityShort] = priority
+			self.__logniMaskSeverity[severityShort] = self.__setPriority(priority)
 
 		self.__debug('__setMask: self.__logniMaskSeverityShort=%s', self.__logniMaskSeverityShort)
 		self.__debug('__setMask: self.__logniMaskSeverity=%s', self.__logniMaskSeverity)
@@ -238,24 +245,33 @@ class LogNI(object):
 		""" stderr """
 
 		self.__stderr = stderr
+		self.__debug('stderr=%s', stderr)
 
 	console = stderr
 
 
 	def flush(self, flush=0):
 		""" flush """
+
 		self.__flush = flush
+		self.__debug('flush=%s', flush)
+
 
 	def strip(self, strip=0):
 		""" strip """
+
 		self.__strip = strip
+		self.__debug('strip=%s', strip)
+
 
 	def maxLen(self, maxLen=0):
 		""" maxLen """
+
 		self.__maxLen = maxLen
+		self.__debug('maxLen=%s', maxLen)
 
 
-	#def __le(self, msg, mask):
+	# def __le(self, msg, mask):
 	#	""" logentries """
 	#
 	#	if mask == 'INFO':
@@ -277,8 +293,7 @@ class LogNI(object):
 	def __logUse(self, severity='', priority=1):
 		""" use log ? """
 
-		if not priority:
-			priority = 1
+		priority = self.__setPriority(priority)
 
 		# mask=ALL
 		if self.__mask == 'ALL':
@@ -292,47 +307,56 @@ class LogNI(object):
 			return 1
 
 		# message hidden
-		_no = self.__logniMaskSeverity[severity[0]]
-		if priority < _no:
+		_priority = self.__logniMaskSeverity[severity[0]]
+		if priority < _priority:
 			self.__debug('uselog: severity=%s, msg priority=%s < mask priority=%s -> msg log is HIDDEN',\
-				(severity, priority, _no))
+				(severity, priority, _priority))
 			return 1
-
 
 		# message visible
 		self.__debug('uselog: severity=%s, msg priority=%s >= mask priority=%s -> msg log is VISIBLE',\
-			(severity, priority, _no))
+			(severity, priority, _priority))
 
 		return 0
 
 
-	def ni(self, msg, params={}, offset=0, depth=0, maxLen=0, **kw):
-		""" message """
+	def __setPriority(self, priority=4):
+		""" set priority """
 
-		severity, priority = kw.iteritems().next()
-		logInfo = '%s%s' % (severity[0], priority)
-		self.__debug('ni: severity=%s, priority=%s', (severity, priority))
+		if not priority:
+			priority = 1
+
+		priority = int(priority)
 
 		# priority
 		if priority < 1:
 			priority = 1
-		elif priority > 4:
-			priority = 4
+		elif priority > 5:
+			priority = 5
+
+		return priority
+
+
+	def log(self, msg, params=(), config=None, **kw):
+		""" log message """
+
+		severity, priority = kw.iteritems().next()
+		self.__debug('log: severity=%s, priority=%s', (severity, priority))
+
+		# priority
+		priority = self.__setPriority(priority)
 
 		# log use?
-		retUse = self.__logUse(severity, priority)
-		if retUse == 1:
-			return 1
+		if self.__logUse(severity, priority) == 1:
+			return {'msg':msg, 'severity':severity, 'priority':priority, 'use':0}
 
 		try:
 			msg = msg % params
-		except Exception, emsg:
-			logInfo	= '!!'
+		except BaseException, emsg:
 			#color = 'red'
-			msg = '%s %s <%s>' % (msg, params, emsg)
+			msg = '!! %s %s <%s>' % (msg, params, emsg)
 
 		# unicode test
-		#if type(msg) == types.UnicodeType:
 		if isinstance(msg, types.UnicodeType):
 			msg = msg.encode(self.__charset, 'ignore')
 
@@ -340,17 +364,22 @@ class LogNI(object):
 		if self.__strip:
 			msg = msg.replace('\n', ' ').strip()
 
+		# config
+		if not config:
+			config = {'maxLen':0, 'depth':0, 'offset':0}
+
+		maxLen = config.get('maxLen', 0)
+		offset = config.get('offset', 0)
+
 		# maxlen
 		msgLen = len(msg)
-		if self.__maxLen > 0:
-			if msgLen > self.__maxLen:
-				msg = msg[:self.__maxLen] + ' ...'
-				self.__debug('ni: msgLen=%s > global maxLen=%s -> because msg short', (msgLen, self.__maxLen))
+		if self.__maxLen > 0 and msgLen > self.__maxLen:
+			msg = msg[:self.__maxLen] + ' ...'
+			self.__debug('ni: msgLen=%s > global maxLen=%s -> because msg short', (msgLen, self.__maxLen))
 
-		if maxLen > 0:
-			if msgLen > maxLen:
-				msg = msg[:maxLen] + ' ...'
-				self.__debug('ni: msgLen=%s > local maxLen=%s -> because msg short', (msgLen, maxLen))
+		if maxLen > 0 and msgLen > maxLen:
+			msg = msg[:maxLen] + ' ...'
+			self.__debug('ni: msgLen=%s > local maxLen=%s -> because msg short', (msgLen, maxLen))
 
 		# color
 		# todo ...
@@ -358,28 +387,25 @@ class LogNI(object):
 		# stack
 		stackList = []
 		offset = (offset or self.__stackOffset or 0) + 1
-		limit = (depth or self.__stackDepth) + offset
-		lineNo = 0
-		filename = 'unknown'
-		for (filename, lineNo, func, text) in traceback.extract_stack(limit=limit)[:-offset]:
-			filename = filename.split('/')[-1]
-			lineInfo = "%s:%s():%s" % (filename, func, lineNo)
-			stackList.append(lineInfo)
-			text = None
-		stackInfo = ",".join(stackList)
+		limit = (config.get('depth', 0) or self.__stackDepth) + offset
+		for tes in traceback.extract_stack(limit=limit)[:-offset]:
+			stackList.append('%s:%s():%s' % (tes[0].split('/')[-1], tes[2], tes[1]))
+		# del stackList
 
-		# message format
-		timeString = time.strftime(self.__timeFormat, time.localtime())
-		hashStr = '%x' % random.randint(1, 4294967295)
-
+		# log message
 		logMessage = "%s [%s] %s: %s [%s] {%s}\n" % \
-			(timeString, os.getpid(), logInfo, msg, hashStr, stackInfo)
+			(time.strftime(self.__timeFormat, time.localtime()),\
+			os.getpid(),\
+			'%s%s' % (severity[0], priority),\
+			msg,\
+			'%x' % random.randint(1, 4294967295),\
+			','.join(stackList))
 
 		# file descriptor
-		if self.__filed:
-			self.__filed.write(logMessage)
+		if self.__fd:
+			self.__fd.write(logMessage)
 			if self.__flush:
-				self.__filed.flush()
+				self.__fd.flush()
 
 		# stderr
 		if self.__stderr:
@@ -387,65 +413,64 @@ class LogNI(object):
 			if self.__flush:
 				sys.stderr.flush()
 
-
-		ret = {'hash':hashStr}
-
 		# logentries
-		#if self.__logEntries:
+		# if self.__logEntries:
 		#	retLE = self.__le(msg=msg, mask=severity)
 		#	if retLE:
 		#		ret['logentries'] = retLE
 		#	del retLE
 
 		# rollbar
-		#if self.__logRollbar:
+		# if self.__logRollbar:
 		#	self.__rollbar.report_message(message=logMessage, level=severity.lower(), request=None,\
 		#		extra_data=None, payload_data=None)
 
-		return ret
+		return {'msg':msg, 'severity':severity, 'priority':priority, 'use':1}
 
 	# ---
 
-	def fatal(self, msg, params, priority=4):
+	def fatal(self, msg, params=(), priority=4):
 		""" fatal """
 
-		return self.ni(msg=msg, params=params, CRITICAL=priority)
+		return self.log(msg=msg, params=params, CRITICAL=priority)
 
 	critical = fatal
 
 
-	def error(self, msg, params, priority=4):
+	def error(self, msg, params=(), priority=4):
 		""" error """
 
-		return self.ni(msg=msg, params=params, ERR=priority)
+		return self.log(msg=msg, params=params, ERR=priority)
 
 	err = error
 
 
-	def warn(self, msg, params, priority=4):
+	def warn(self, msg, params=(), priority=4):
 		""" warn """
-		return self.ni(msg=msg, params=params, WARN=priority)
+
+		return self.log(msg=msg, params=params, WARN=priority)
 
 	warning = warn
 
 
-	def info(self, msg, params, priority=4):
+	def info(self, msg, params=(), priority=4):
 		""" info """
 
-		return self.ni(msg=msg, params=params, INFO=priority)
+		return self.log(msg=msg, params=params, INFO=priority)
 
 	informational = info
 
 
-	def debug(self, msg, params, priority=4):
+	def debug(self, msg, params=(), priority=4):
 		""" debug """
 
-		return self.ni(msg=msg, params=params, DEBUG=priority)
+		return self.log(msg=msg, params=params, DEBUG=priority)
 
 	dbg = debug
 
 
-	def __debug(self, msg, val):
+	def __debug(self, msg, val=()):
+		""" debugmode log """
 
 		if self.debugMode:
 			if val:
@@ -459,61 +484,63 @@ class LogNI(object):
 
 if __name__ == '__main__':
 
-	logni = LogNI()
+	LOG = Logni()
 
 	print
 
 	print "set debug mode"
-	logni.debugMode = 1
+	LOG.debugMode = 1
 	print
 
 
 	# init
-	logni.mask('I3E1C1W2')
-	logni.stderr(1)
+	LOG.mask('I3E1C1W2')
+	LOG.stderr(1)
 	print
 
 
 	# https://logentries.com
-	#print "logni.logentries( '<YOUR_API_KEY>')"
-	#logni.logentries('<YOUR_LOGENTRIES_KEY>')
-	#print
+	# print "logni.logentries( '<YOUR_API_KEY>')"
+	# LOG.logentries('<YOUR_LOGENTRIES_KEY>')
+	# print
 
 
 	# logging
-	print "# log.ni('tests %s %s', (11, 22), INFO=3)"
-	logni.ni('tests %s %s', (11, 22), INFO=3)
+	print "# logni.log('tests %s %s', (11, 22), INFO=3)"
+	LOG.log('tests %s %s', (11, 22), INFO=3)
 	print
 
 
 	# alias method for log.ni()
-	print "# log.critical('critical message')"
-	logni.critical('critical message', ())
+	print "# logni.critical('critical message')"
+	LOG.critical('critical message', ())
 	print
 
 
-	print "# log.error('error message #%s', time.time(), priority=4)"
-	logni.error('error message #%s', time.time(), priority=4)
+	print "# logni.error('error message #%s', time.time(), priority=4)"
+	LOG.error('error message #%s', time.time(), priority=4)
 	print
 
 
-	print "# log.warning('warning message #%s', time.time(), priority=3)"
-	logni.warning('warning message #%s', time.time(), priority=3)
+	print "# logni.warning('warning message #%s', time.time(), priority=3)"
+	LOG.warning('warning message #%s', time.time(), priority=3)
 	print
 
 
-	print "# log.info('info message #%s', time.time(), priority=2)"
-	logni.info('info message #%s', time.time(), priority=2)
+	print "# logni.info('info message #%s', time.time(), priority=2)"
+	LOG.info('info message #%s', time.time(), priority=2)
 	print
 
 
-	print "# log.debug('debug message #%s', time.time(), priority=1)"
-	logni.debug('debug message #%s', time.time(), priority=1)
+	print "# logni.debug('debug message #%s', time.time(), priority=1)"
+	LOG.debug('debug message #%s', time.time(), priority=1)
 	print
 
-	print "# log.maxLen(5) "
-	logni.maxLen(5)
+	print "# logni.maxLen(5) "
+	LOG.maxLen(5)
 
-	print "# log.info('very loooong meeeesage', time.time(), priority=4)"
-	print logni.info('very loooong meeeesage #%s', time.time(), priority=4)
+	print "# logni.info('very loooong meeeesage', time.time(), priority=4)"
+	print LOG.info('very loooong meeeesage #%s', time.time(), priority=4)
+	print
+	print LOG.info('info message without params', priority=4)
 	print
