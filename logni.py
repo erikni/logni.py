@@ -2,7 +2,19 @@
 # -*- coding: utf-8 -*-
 
 """
-logni is python library for event logging and application states
+ GNU General Public License v3.0
+
+ Permissions of this strong copyleft license are conditioned on making 
+ available complete source code of licensed works and modifications, 
+ which include larger works using a licensed work, under the same license. 
+ Copyright and license notices must be preserved. Contributors provide 
+ an express grant of patent rights.
+
+ see all: https://github.com/erikni/logni.py/blob/master/LICENSE
+
+ ---
+
+ logni is python library for event logging and application states
 """
 
 import time
