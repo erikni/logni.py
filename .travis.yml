@@ -9,11 +9,15 @@ branches:
 
 install:
   - sudo sudo apt-get install -y pylint
+  - sudo pip install -U pytest
 
 # command to run tests
 script:
   - echo "pylint --errors-only src/logni.py ... "
   - pylint --errors-only src/logni.py
+
+  - echo "pytest ... "
+  - pytest
 
   - echo "run logni.py ... "
   - python src/logni.py
