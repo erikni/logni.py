@@ -19,9 +19,8 @@ $ pip install -r requirements.txt
 $ python src/logni.py
 ```
 
----
+## Example
 
-Example
 ```
 $ python
 

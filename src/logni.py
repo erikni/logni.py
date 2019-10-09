@@ -1,4 +1,4 @@
-#!usr/bin/python
+#!/usr/bin/python
 # -*- coding: utf-8 -*-
 
 """
@@ -22,48 +22,53 @@ import random
 import types
 import traceback
 import os
+import os.path
 import sys
 #import logging
+
+MAX_LEN = 10000
 
 
 class Logni(object):
 	""" logni object """
 
-	def __init__(self):
+	def __init__(self, config=None):
 		""" init """
 
-		self.debugMode = 0
+		# global
+		self.__config = {\
+			'debugMode': False,
+			'charset': 'utf8',
+			'color': 0,
+			'console': 0,
+			'env': '',
+			'flush': 1,
+			'mask': 'ALL',
+			'maxLen': MAX_LEN,
+			'strip': 0,
+			'stackOffset': 0,
+			'stackDepth': 1,
+			'timeFormat': '%Y/%m/%d %H:%M:%S',
+			'revision': ''}
 
-		self.__mask = 'ALL'
-		self.__stderr = 0
-		self.__flush = 1
-		self.__maxLen = 1000
-		self.__strip = 0
-		self.__stackOffset = 0
-		self.__stackDepth = 1
-		self.__timeFormat = '%Y/%m/%d %H:%M:%S'
+		self.__file = None
 
-		self.__fd = None
-		self.__charset = 'utf8'
+		if not config:
+			config = {}
 
-		self.__env = ''
-		self.__revision = ''
-
-		#self.__logEntries = 0
-		#self.__logRollbar = 0
-		#self.__rollbar = None
-		#self.__loge = None
+		for cfgName in config:
+			self.__config[cfgName] = config[cfgName]
 
 		# colors: https://getbootstrap.com/docs/4.1/components/alerts/
-		self.__logniColors = {\
-			'primary':"#004085", # blue light
-			'secondary':"#383d41", # seda
-			'success':"#155724", # green light
-			'danger':"#721c24", # ping light
-			'warning':"#856404", # yellow light
-			'info':"#0c5460", # blue-green light
-			'light':"#818182", # svetle seda
-			'dark':"#1b1e21"} # tmave seda
+		# self.__logniColors = {\
+		#	'primary':"#004085", # blue light
+		#	'secondary':"#383d41", # seda
+		#	'success':"#155724", # green light
+		#	'danger':"#721c24", # ping light
+		#	'warning':"#856404", # yellow light
+		#	'info':"#0c5460", # blue-green light
+		#	'light':"#818182", # svetle seda
+		#	'dark':"#1b1e21"} # tmave seda
 
 		# severity
 		self.__logniMaskSeverity = {}
@@ -88,85 +93,28 @@ class Logni(object):
 
 		# default
 		self.mask('ALL')
-		self.stderr(True)
-		self.color(True)
+		self.console(True)
 
-
-	# def logentries(self, apiKey):
-	#	""" logentries """
-	#
-	#	if not apiKey:
-	#		self.ni('logentries: apikey must be input', ERR=4)
-	#		return 1
-	#
-	#	# logentries
-	#	try:
-	#		from logentries import LogentriesHandler
-	#	except BaseException, emsg:
-	#		self.ni('logentries import error="%s"', emsg, ERR=4)
-	#		return 1
-	#
-	#	self.__loge = logging.getLogger('logentries')
-	#	self.__loge.setLevel(logging.INFO)
-	#	# Note if you have set up the logentries handler in Django, the following line is not necessary
-	#	self.__loge.addHandler(LogentriesHandler(apiKey))
-	#
-	#	self.__logEntries = 1
-	#
-	#	return 0
-
-
-	# def rollbar(self, apiKey):
-	#	""" rollbar """
-	#
-	#	if not apiKey:
-	#		self.ni('rollbar: apikey must be input', ERR=4)
-	#		return 1
-	#
-	#	try:
-	#		import rollbar
-	#	except BaseException, emsg:
-	#		self.ni('rollbar import error="%s"', emsg, ERR=4)
-	#		return 1
-	#
-	#	self.__rollbar = rollbar.init(apiKey, self.__env)
-	#
-	#	self.__logRollbar = 1
-	#
-	#	return 0
-
-
-	def color(self, color=True):
-		""" color """
-
-		# todo: code
-		self.__debug('color=%s', color)
-
-
-	def environment(self, env=''):
-		""" environment """
-
-		self.__env = env
-		self.__debug('environment=%s', env)
-
-	env = environment
-
-
-	def revision(self, revision=''):
-		""" revision """
-
-		self.__revision = revision
-		self.__debug('revision=%s', revision)
+		if config.get('mask'):
+			self.mask(config['mask'])
 
 
 	def file(self, logFile):
 		""" file """
 
+		self.__debug('file=%s', logFile)
+
+
+		# err: file not found
+		if not os.path.isfile(logFile):
+			self.__debug('file="%s": not found"', logFile)
+			return 1
+
 		# err: read file
 		try:
-			self.__fd = open(logFile, 'ab')
+			self.__file = open(logFile, 'ab')
 		except BaseException, emsg:
-			self.__debug('file="%s", err="%s"', (logFile, emsg))
+			self.__debug('file="%s": err="%s"', (logFile, emsg))
 			return 1
 
 		self.__debug('file=%s', logFile)
@@ -179,26 +127,22 @@ class Logni(object):
 
 		self.__debug('mask=%s', mask)
 
+		# default mask=ALL
 		if not mask:
-			self.__debug('mask=ALL')
 			mask = 'ALL'
+			self.__debug('mask=ALL')
 
 		# log mask = ALL | OFF
-		retMask = self.__setMask(mask)
-		if retMask == 0:
+		if self.__setMask(mask) == 0:
 			return 0
 
 		# len is wrong
 		lenMask = len(mask)
-		if lenMask < 2 or lenMask > 10:
+		if lenMask not in (2, 4, 6, 8, 10):
 			self.__debug('mask=%s: error len=%s', (mask, lenMask))
 			return 1
 
-		# err: incorrect mask
-		if lenMask % 2 != 0:
-			raise ValueError('logni: incorrect mask="%s"' % (mask,))
-
-		# set default LEVEL=0
+		# set default MASK=0FF
 		self.__setMask('OFF')
 
 		# set severity
@@ -213,7 +157,9 @@ class Logni(object):
 			del _len, _priority
 
 		self.__debug('mask: self.__logniMaskSeverity=%s', self.__logniMaskSeverity)
-		self.__mask = mask
+		self.__config['mask'] = mask
+
+		self.__debug('mask=%s', mask)
 
 		return 0
 
@@ -224,11 +170,9 @@ class Logni(object):
 		if not mask:
 			mask = 'ALL'
 
-		if mask == 'ALL':
-			priority = 1
-		elif mask == 'OFF':
-			priority = 5
-		else:
+		maskPriority = {'ALL': 1, 'OFF': 5}
+		priority = maskPriority.get(mask)
+		if not priority:
 			return 1
 
 		for severityShort in self.__logniMaskSeverityShort:
@@ -241,80 +185,49 @@ class Logni(object):
 
 
 
-	def stderr(self, stderr=0):
-		""" stderr """
+	def console(self, console=0):
+		""" stderr / console """
 
-		self.__stderr = stderr
-		self.__debug('stderr=%s', stderr)
+		self.__config['console'] = console
+		self.__debug('console=%s', console)
 
-	console = stderr
-
-
-	def flush(self, flush=0):
-		""" flush """
-
-		self.__flush = flush
-		self.__debug('flush=%s', flush)
+	stderr = console
 
 
-	def strip(self, strip=0):
-		""" strip """
+	def maxLen(self, maxLen=MAX_LEN):
+		""" stderr / console """
 
-		self.__strip = strip
-		self.__debug('strip=%s', strip)
-
-
-	def maxLen(self, maxLen=0):
-		""" maxLen """
-
-		self.__maxLen = maxLen
+		self.__config['maxLen'] = maxLen
 		self.__debug('maxLen=%s', maxLen)
-
-
-	# def __le(self, msg, mask):
-	#	""" logentries """
-	#
-	#	if mask == 'INFO':
-	#		return self.__loge.info(msg)
-	#
-	#	elif mask == 'WARN':
-	#		return self.__loge.warning(msg)
-	#
-	#	elif mask in ('ERR', 'ERROR'):
-	#		return self.__loge.error(msg)
-	#
-	#	elif mask in ('CRITICAL', 'FATAL'):
-	#		return self.__loge.critical(msg)
-	#
-	#	elif mask in ('DEBUG', 'DBG'):
-	#		return self.__loge.debug(msg)
 
 
 	def __logUse(self, severity='', priority=1):
 		""" use log ? """
 
+		self.__debug('__logUse: severity=%s, priority=%s', (severity, priority))
+
 		priority = self.__setPriority(priority)
 
 		# mask=ALL
-		if self.__mask == 'ALL':
-			self.__debug('uselog: severity=%s, msg priority=%s >= mask=ALL -> msg log is VISIBLE',\
+		if self.__config['mask'] == 'ALL':
+			self.__debug('__logUse: severity=%s, msg priority=%s >= mask=ALL -> msg log is VISIBLE',\
 				(severity, priority))
 
 			return 0
 
 		if severity[0] not in self.__logniMaskSeverity:
-			self.__debug('uselog: severity=%s not exist', severity)
+			self.__debug('__logUse: severity=%s not exist', severity)
 			return 1
 
 		# message hidden
 		_priority = self.__logniMaskSeverity[severity[0]]
 		if priority < _priority:
-			self.__debug('uselog: severity=%s, msg priority=%s < mask priority=%s -> msg log is HIDDEN',\
+			self.__debug('__logUse: severity=%s, msg priority=%s < mask priority=%s -> msg log is HIDDEN',\
 				(severity, priority, _priority))
 			return 1
 
 		# message visible
-		self.__debug('uselog: severity=%s, msg priority=%s >= mask priority=%s -> msg log is VISIBLE',\
+		self.__debug('__logUse: severity=%s, msg priority=%s >= mask priority=%s -> msg log is VISIBLE',\
 			(severity, priority, _priority))
 
 		return 0
@@ -323,21 +236,22 @@ class Logni(object):
 	def __setPriority(self, priority=4):
 		""" set priority """
 
+		self.__debug('__setPriority: priority=%s', priority)
+
 		if not priority:
-			priority = 1
+			return 1
 
 		priority = int(priority)
+		priority = abs(priority)
 
 		# priority
-		if priority < 1:
-			priority = 1
-		elif priority > 5:
+		if priority not in range(1, 5+1):
 			priority = 5
 
 		return priority
 
 
-	def log(self, msg, params=(), config=None, **kw):
+	def log(self, msg, params=(), **kw):
 		""" log message """
 
 		severity, priority = kw.iteritems().next()
@@ -358,74 +272,74 @@ class Logni(object):
 
 		# unicode test
 		if isinstance(msg, types.UnicodeType):
-			msg = msg.encode(self.__charset, 'ignore')
+			msg = msg.encode(self.__config['charset'], 'ignore')
 
 		# strip text
-		if self.__strip:
+		if self.__config['strip']:
 			msg = msg.replace('\n', ' ').strip()
-
-		# config
-		if not config:
-			config = {'maxLen':0, 'depth':0, 'offset':0}
-
-		maxLen = config.get('maxLen', 0)
-		offset = config.get('offset', 0)
 
 		# maxlen
 		msgLen = len(msg)
-		if self.__maxLen > 0 and msgLen > self.__maxLen:
-			msg = msg[:self.__maxLen] + ' ...'
-			self.__debug('ni: msgLen=%s > global maxLen=%s -> because msg short', (msgLen, self.__maxLen))
-
-		if maxLen > 0 and msgLen > maxLen:
-			msg = msg[:maxLen] + ' ...'
-			self.__debug('ni: msgLen=%s > local maxLen=%s -> because msg short', (msgLen, maxLen))
+		if msgLen > self.__config['maxLen']:
+			msg = msg[:self.__config['maxLen']] + ' ...'
+			self.__debug('log: msgLen=%s > global maxLen=%s -> because msg short',\
+				(msgLen, self.__config['maxLen']))
 
 		# color
 		# todo ...
 
 		# stack
 		stackList = []
-		offset = (offset or self.__stackOffset or 0) + 1
-		limit = (config.get('depth', 0) or self.__stackDepth) + offset
+		offset = self.__config['stackOffset'] + 1
+		limit = self.__config['stackDepth'] + offset
 		for tes in traceback.extract_stack(limit=limit)[:-offset]:
 			stackList.append('%s:%s():%s' % (tes[0].split('/')[-1], tes[2], tes[1]))
 		# del stackList
 
 		# log message
 		logMessage = "%s [%s] %s: %s [%s] {%s}\n" % \
-			(time.strftime(self.__timeFormat, time.localtime()),\
+			(time.strftime(self.__config['timeFormat'], time.localtime()),\
 			os.getpid(),\
 			'%s%s' % (severity[0], priority),\
 			msg,\
 			'%x' % random.randint(1, 4294967295),\
 			','.join(stackList))
 
-		# file descriptor
-		if self.__fd:
-			self.__fd.write(logMessage)
-			if self.__flush:
-				self.__fd.flush()
-
-		# stderr
-		if self.__stderr:
-			sys.stderr.write(logMessage)
-			if self.__flush:
-				sys.stderr.flush()
-
-		# logentries
-		# if self.__logEntries:
-		#	retLE = self.__le(msg=msg, mask=severity)
-		#	if retLE:
-		#		ret['logentries'] = retLE
-		#	del retLE
-
-		# rollbar
-		# if self.__logRollbar:
-		#	self.__rollbar.report_message(message=logMessage, level=severity.lower(), request=None,\
-		#		extra_data=None, payload_data=None)
+		# log to file / console
+		self.__log2File(logMessage)
+		self.__log2Console(logMessage)
 
 		return {'msg':msg, 'severity':severity, 'priority':priority, 'use':1}
+
+
+	def __log2File(self, logMessage):
+		""" log to file """
+
+		# file descriptor
+		if not self.__file:
+			return 0
+
+		self.__file.write(logMessage)
+
+		if self.__config['flush']:
+			self.__file.flush()
+
+		return 0
+
+
+	def __log2Console(self, logMessage):
+		""" log to console """
+
+		# stderr / console
+		if not self.__config['console']:
+			return 0
+
+		sys.stderr.write(logMessage)
+
+		if self.__config['flush']:
+			sys.stderr.flush()
+
+		return 0
 
 	# ---
 
@@ -435,6 +349,7 @@ class Logni(object):
 		return self.log(msg=msg, params=params, CRITICAL=priority)
 
 	critical = fatal
+	crit = fatal
 
 
 	def error(self, msg, params=(), priority=4):
@@ -472,11 +387,13 @@ class Logni(object):
 	def __debug(self, msg, val=()):
 		""" debugmode log """
 
-		if self.debugMode:
+		_tf = time.strftime(self.__config['timeFormat'], time.localtime())
+
+		if self.__config['debugMode']:
 			if val:
-				print 'DEBUG:', msg % val
+				print '%s [%s] DEBUG:' % (_tf, os.getpid()), msg % val
 			else:
-				print 'DEBUG:', msg
+				print '%s [%s] DEBUG: %s' % (_tf, os.getpid(), msg)
 
 		return
 
@@ -484,18 +401,12 @@ class Logni(object):
 
 if __name__ == '__main__':
 
-	LOG = Logni()
+	LOG = Logni({'mask':'I3E1C1W2', 'debugMode':True})
 
 	print
 
-	print "set debug mode"
-	LOG.debugMode = 1
-	print
-
-
-	# init
-	LOG.mask('I3E1C1W2')
-	LOG.stderr(1)
+	# console
+	LOG.console(True)
 	print
 
 
