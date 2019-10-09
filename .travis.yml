@@ -22,3 +22,5 @@ script:
   - echo "run logni.py ... "
   - python src/logni.py
 
+  - echo "run example.py ... "
+  - python test/example/example.py

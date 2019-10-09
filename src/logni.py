@@ -24,7 +24,6 @@ import traceback
 import os
 import os.path
 import sys
-#import logging
 
 MAX_LEN = 10000
 
@@ -73,11 +72,11 @@ class Logni(object):
 		# severity
 		self.__logniMaskSeverity = {}
 		self.__logniSeverityColors = { \
-			'DEBUG':"light",
-			'INFO':"primary",
-			'WARN':"warning",
-			'ERROR':"danger",
-			'CRITICAL':"danger"}
+			'DEBUG': "light",
+			'INFO': "primary",
+			'WARN': "warning",
+			'ERROR': "danger",
+			'CRITICAL': "danger"}
 
 		self.__logniMaskSeverityFull = ["DEBUG", "INFO", "WARN", "ERROR", "CRITICAL"]
 
@@ -88,8 +87,6 @@ class Logni(object):
 
 			self.__logniMaskSeverityShort.append(_short)
 			self.__logniMaskSeverity[_short] = self.__setPriority(5)
-
-			del _short
 
 		# default
 		self.mask('ALL')
@@ -104,7 +101,6 @@ class Logni(object):
 
 		self.__debug('file=%s', logFile)
 
-
 		# err: file not found
 		if not os.path.isfile(logFile):
 			self.__debug('file="%s": not found"', logFile)
@@ -116,8 +112,6 @@ class Logni(object):
 		except BaseException, emsg:
 			self.__debug('file="%s": err="%s"', (logFile, emsg))
 			return 1
-
-		self.__debug('file=%s', logFile)
 
 		return 0
 
@@ -159,8 +153,6 @@ class Logni(object):
 		self.__debug('mask: self.__logniMaskSeverity=%s', self.__logniMaskSeverity)
 		self.__config['mask'] = mask
 
-		self.__debug('mask=%s', mask)
-
 		return 0
 
 
@@ -201,6 +193,23 @@ class Logni(object):
 		self.__debug('maxLen=%s', maxLen)
 
 
+	def __setPriority(self, priority=4):
+		""" set priority """
+
+		self.__debug('__setPriority: priority=%s', priority)
+
+		if not priority:
+			return 1
+
+		priority = abs(int(priority))
+
+		# priority
+		if priority not in range(1, 5+1):
+			priority = 5
+
+		return priority
+
+
 	def __logUse(self, severity='', priority=1):
 		""" use log ? """
 
@@ -208,11 +217,10 @@ class Logni(object):
 
 		priority = self.__setPriority(priority)
 
-		# mask=ALL
+		# if mask=ALL
 		if self.__config['mask'] == 'ALL':
 			self.__debug('__logUse: severity=%s, msg priority=%s >= mask=ALL -> msg log is VISIBLE',\
 				(severity, priority))
-
 			return 0
 
 		if severity[0] not in self.__logniMaskSeverity:
@@ -233,22 +241,19 @@ class Logni(object):
 		return 0
 
 
-	def __setPriority(self, priority=4):
-		""" set priority """
+	def __logMaxLen(self, msg):
+		""" max length """
 
-		self.__debug('__setPriority: priority=%s', priority)
+		# maxlen
+		msgLen = len(msg)
+		if msgLen < self.__config['maxLen']:
+			return msg
 
-		if not priority:
-			return 1
+		msg = msg[:self.__config['maxLen']] + ' ...'
+		self.__debug('log: msgLen=%s > global maxLen=%s -> because msg short',\
+			(msgLen, self.__config['maxLen']))
 
-		priority = int(priority)
-		priority = abs(priority)
-
-		# priority
-		if priority not in range(1, 5+1):
-			priority = 5
-
-		return priority
+		return msg
 
 
 	def log(self, msg, params=(), **kw):
@@ -267,7 +272,6 @@ class Logni(object):
 		try:
 			msg = msg % params
 		except BaseException, emsg:
-			#color = 'red'
 			msg = '!! %s %s <%s>' % (msg, params, emsg)
 
 		# unicode test
@@ -279,14 +283,7 @@ class Logni(object):
 			msg = msg.replace('\n', ' ').strip()
 
 		# maxlen
-		msgLen = len(msg)
-		if msgLen > self.__config['maxLen']:
-			msg = msg[:self.__config['maxLen']] + ' ...'
-			self.__debug('log: msgLen=%s > global maxLen=%s -> because msg short',\
-				(msgLen, self.__config['maxLen']))
-
-		# color
-		# todo ...
+		msg = self.__logMaxLen(msg)
 
 		# stack
 		stackList = []
@@ -294,15 +291,14 @@ class Logni(object):
 		limit = self.__config['stackDepth'] + offset
 		for tes in traceback.extract_stack(limit=limit)[:-offset]:
 			stackList.append('%s:%s():%s' % (tes[0].split('/')[-1], tes[2], tes[1]))
-		# del stackList
 
 		# log message
+		xrand = '%x' % random.randint(1, 4294967295)
 		logMessage = "%s [%s] %s: %s [%s] {%s}\n" % \
 			(time.strftime(self.__config['timeFormat'], time.localtime()),\
 			os.getpid(),\
 			'%s%s' % (severity[0], priority),\
-			msg,\
-			'%x' % random.randint(1, 4294967295),\
+			msg, xrand,\
 			','.join(stackList))
 
 		# log to file / console
@@ -343,17 +339,16 @@ class Logni(object):
 
 	# ---
 
-	def fatal(self, msg, params=(), priority=4):
-		""" fatal """
+	def critical(self, msg, params=(), priority=4):
+		""" critical / fatal message """
 
 		return self.log(msg=msg, params=params, CRITICAL=priority)
 
-	critical = fatal
-	crit = fatal
+	fatal = critical
 
 
 	def error(self, msg, params=(), priority=4):
-		""" error """
+		""" err / error message """
 
 		return self.log(msg=msg, params=params, ERR=priority)
 
@@ -361,7 +356,7 @@ class Logni(object):
 
 
 	def warn(self, msg, params=(), priority=4):
-		""" warn """
+		""" warn / warning message """
 
 		return self.log(msg=msg, params=params, WARN=priority)
 
@@ -369,7 +364,7 @@ class Logni(object):
 
 
 	def info(self, msg, params=(), priority=4):
-		""" info """
+		""" info / informational message """
 
 		return self.log(msg=msg, params=params, INFO=priority)
 
@@ -377,7 +372,7 @@ class Logni(object):
 
 
 	def debug(self, msg, params=(), priority=4):
-		""" debug """
+		""" dbg / debug message """
 
 		return self.log(msg=msg, params=params, DEBUG=priority)
 
@@ -385,73 +380,18 @@ class Logni(object):
 
 
 	def __debug(self, msg, val=()):
-		""" debugmode log """
+		""" debug mode log """
+
+		if not self.__config['debugMode']:
+			return 1
 
 		_tf = time.strftime(self.__config['timeFormat'], time.localtime())
+		if val:
+			print '%s [%s] DEBUG:' % (_tf, os.getpid()), msg % val
+			return 0
 
-		if self.__config['debugMode']:
-			if val:
-				print '%s [%s] DEBUG:' % (_tf, os.getpid()), msg % val
-			else:
-				print '%s [%s] DEBUG: %s' % (_tf, os.getpid(), msg)
-
-		return
+		print '%s [%s] DEBUG: %s' % (_tf, os.getpid(), msg)
+		return 0
 
 
-
-if __name__ == '__main__':
-
-	LOG = Logni({'mask':'I3E1C1W2', 'debugMode':True})
-
-	print
-
-	# console
-	LOG.console(True)
-	print
-
-
-	# https://logentries.com
-	# print "logni.logentries( '<YOUR_API_KEY>')"
-	# LOG.logentries('<YOUR_LOGENTRIES_KEY>')
-	# print
-
-
-	# logging
-	print "# logni.log('tests %s %s', (11, 22), INFO=3)"
-	LOG.log('tests %s %s', (11, 22), INFO=3)
-	print
-
-
-	# alias method for log.ni()
-	print "# logni.critical('critical message')"
-	LOG.critical('critical message', ())
-	print
-
-
-	print "# logni.error('error message #%s', time.time(), priority=4)"
-	LOG.error('error message #%s', time.time(), priority=4)
-	print
-
-
-	print "# logni.warning('warning message #%s', time.time(), priority=3)"
-	LOG.warning('warning message #%s', time.time(), priority=3)
-	print
-
-
-	print "# logni.info('info message #%s', time.time(), priority=2)"
-	LOG.info('info message #%s', time.time(), priority=2)
-	print
-
-
-	print "# logni.debug('debug message #%s', time.time(), priority=1)"
-	LOG.debug('debug message #%s', time.time(), priority=1)
-	print
-
-	print "# logni.maxLen(5) "
-	LOG.maxLen(5)
-
-	print "# logni.info('very loooong meeeesage', time.time(), priority=4)"
-	print LOG.info('very loooong meeeesage #%s', time.time(), priority=4)
-	print
-	print LOG.info('info message without params', priority=4)
-	print
+# run: python test/example/example.py

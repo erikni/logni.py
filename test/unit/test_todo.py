@@ -1,11 +1,13 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
 
 import pytest
 
 
-def test_func_fast():
+def testFuncFast():
     pass
 
 
 @pytest.mark.slow
-def test_func_slow():
+def testFuncSlow():
     pass
