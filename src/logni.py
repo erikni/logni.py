@@ -385,12 +385,14 @@ class Logni(object):
 		if not self.__config['debugMode']:
 			return 1
 
-		_tf = time.strftime(self.__config['timeFormat'], time.localtime())
+		tf = time.strftime(self.__config['timeFormat'], time.localtime())
+		getpid = os.getpid()
+
 		if val:
-			print '%s [%s] DEBUG:' % (_tf, os.getpid()), msg % val
+			print '%s [%s] DEBUG:' % (tf, getpid), msg % val
 			return 0
 
-		print '%s [%s] DEBUG: %s' % (_tf, os.getpid(), msg)
+		print '%s [%s] DEBUG: %s' % (tf, getpid, msg)
 		return 0
 
 

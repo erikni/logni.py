@@ -36,4 +36,4 @@ jobs:
     - name: Run script
       run: python src/logni.py
     - name: Run example
-      run: python test/example/example.py
+      run: python test/example/basic.py
