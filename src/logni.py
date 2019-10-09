@@ -387,12 +387,14 @@ class Logni(object):
 
 		tf = time.strftime(self.__config['timeFormat'], time.localtime())
 		getpid = os.getpid()
+		msgVal = msg % val
 
 		if val:
-			print '%s [%s] DEBUG:' % (tf, getpid), msg % val
+			msgVal = msg % val
+			sys.stderr.write('%s [%s] DEBUG: %s\n' % (tf, getpid, msgVal))
 			return 0
 
-		print '%s [%s] DEBUG: %s' % (tf, getpid, msg)
+		sys.stderr.write('%s [%s] DEBUG: %s\n' % (tf, getpid, msg))
 		return 0
 
 
