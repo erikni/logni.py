@@ -9,6 +9,9 @@ python:
   - "3.8-dev"  # 3.8 development branch
   - "nightly"  # nightly build
 
+env:
+  - CODECOV_TOKEN="05aaf35c-89cb-419f-9012-e534e1248e3f"
+
 branches:
   only:
   - master
@@ -17,6 +20,7 @@ branches:
 install:
   - sudo sudo apt-get install -y pylint
   - sudo pip install -U pytest
+  - sudo pip install codecov
 
 # command to run tests
 script:
@@ -31,3 +35,9 @@ script:
 
   - echo "run example.py ... "
   - python test/example/basic.py
+
+  - echo "codecov ... "
+  - codecov --token=05aaf35c-89cb-419f-9012-e534e1248e3f
+
+after_success:
+  - codecov
