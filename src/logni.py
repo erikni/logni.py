@@ -19,7 +19,6 @@
 
 import time
 import random
-import types
 import traceback
 import os
 import os.path
@@ -300,7 +299,7 @@ class Logni(object):
 			stackList.append('%s:%s():%s' % (tes[0].split('/')[-1], tes[2], tes[1]))
 
 		# log message
-		xrand = '%x' % random.randint(1, 4294967295)
+		xrand = '%x' % random.SystemRandom().randint(1, 4294967295)
 		logMessage = "%s [%s] %s: %s [%s] {%s}\n" % \
 			(time.strftime(self.__config['timeFormat'], time.localtime()),\
 			os.getpid(),\

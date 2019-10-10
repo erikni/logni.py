@@ -31,9 +31,6 @@ $ python
 >>> log.mask('ALL')
 >>> log.stderr(1)
 
-$ log.log('tests %s %s', (11, 22), INFO=3)
-2016/04/01 22:08:18 [15489] I3: tests 11 22 [17ed5aec] {logni.py:<module>():196}
-
 $ log.critical('critical message')
 2016/04/01 22:08:18 [15489] F4: critical message [7e995d1a] {logni.py:fatal():161}
 

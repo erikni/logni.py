@@ -1,5 +1,8 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+"""
+Basic example
+"""
 
 import sys
 import time
@@ -57,4 +60,3 @@ LOG.info('very loooong meeeesage #%s', time.time(), priority=4)
 print
 
 LOG.info('info message without params', priority=4)
-print
