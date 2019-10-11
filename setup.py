@@ -32,7 +32,7 @@ setuptools.setup(name='logni',\
   long_description_content_type='text/markdown',\
   url='https://github.com/erikni/logni.py',\
   download_url='https://github.com/erik/logni.py/archive/master.zip',\
-  packages=['src'],\
+  packages=['logni'],\
   classifiers=['Development Status :: 4 - Beta',\
     'Programming Language :: Python :: 2',\
     'Programming Language :: Python :: 2.7',\
@@ -41,8 +41,8 @@ setuptools.setup(name='logni',\
     'Programming Language :: Python :: 3.6',\
     'Programming Language :: Python :: 3.7',\
     'Programming Language :: Python :: 3.8',\
-    'License :: OSI Approved :: GNU General Public License v3.0',\
-    'Topic :: System :: Logging',\
-    'Operating System :: Posix :: Linux'],\
+    'License :: OSI Approved :: MIT License',\
+    'Topic :: System :: Logging'],\
   python_requires='>=2.7',\
-  keywords=['logging', 'logging-library', 'logger'])
+  keywords=['logging', 'logging-library', 'logger'],
+  license='MIT')

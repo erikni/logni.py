@@ -9,8 +9,8 @@ logni is a python library for event logging and application states
 
 ## How to install?
 - git (github)
-- pip (python packages -> todo)
-
+- pip (python packages)
+- 
 
 Install from Github
 ```
@@ -18,6 +18,15 @@ $ git clone https://github.com/erikni/logni.py.git
 $ cd logni.py
 $ pip install -r requirements.txt
 $ python src/logni.py
+```
+
+Install with PIP (Python Package Installer)
+```
+$ pip install logni
+$ python2.7 /usr/local/lib/python2.7/dist-packages/logni/logni.py
+
+$ pip3 install logni
+$ python3 /usr/local/lib/python3.5/dist-packages/logni/logni.py 
 ```
 
 ## Example

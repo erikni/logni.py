@@ -9,3 +9,8 @@
 *.debhelper.log
 debian/python-logni/*
 debian/python-module-stampdir*
+
+# pypi
+/dist/
+/logni.egg-info
+.pypirc
