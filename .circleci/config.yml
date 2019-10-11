@@ -31,7 +31,7 @@ jobs:
           name: install dependencies
           command: |
             . venv/bin/activate
-	    python --version
+            python --version
             pip install -r requirements.txt
 
       - save_cache:
@@ -91,6 +91,7 @@ jobs:
     <<: *full-test-template
     docker:
       - image: circleci/python:2.7-jessie
+
 
 workflows:
   version: 2
