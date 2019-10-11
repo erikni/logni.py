@@ -25,7 +25,7 @@ jobs:
       - run:
           name: create virtualenv
           command: |
-            python -m virtualenv env
+            python -m venv venv
 
       - run:
           name: install dependencies
