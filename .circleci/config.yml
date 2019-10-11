@@ -1,0 +1,103 @@
+# Python CircleCI 2.0 configuration file
+#
+# Check https://circleci.com/docs/2.0/language-python/ for more details
+#
+version: 2
+jobs:
+  test-3.7: &full-test-template:
+    docker:
+      # specify the version you desire here
+      # use `-browsers` prefix for selenium tests, e.g. `3.6.1-browsers`
+      - image: circleci/python:3.7-stretch
+
+    working_directory: ~/repo
+
+    steps:
+      - checkout
+
+      # Download and cache dependencies
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "requirements.txt" }}
+            # fallback to using the latest cache if no exact match is found
+            - v1-dependencies-
+
+      - run:
+          name: create virtualenv
+          command: |
+            python -m virtualenv env
+
+      - run:
+          name: install dependencies
+          command: |
+            . venv/bin/activate
+	    python --version
+            pip install -r requirements.txt
+
+      - save_cache:
+          paths:
+            - ./venv
+          key: v1-dependencies-{{ checksum "requirements.txt" }}
+
+      # code analysis for Python
+      - run:
+          name: pylint
+          command: |
+            . venv/bin/activate
+            pylint src/*.py
+
+      # run scripts
+      - run:
+          name: run scripts
+          command: |
+            . venv/bin/activate
+	    python src/logni.py
+
+      # run examples
+      - run:
+          name: run examples
+          command: |
+            . venv/bin/activate
+	    python test/example/basic.py
+
+      # run tests!
+      - run:
+          name: run tests
+          command: |
+            . venv/bin/activate
+            python -m unittest
+
+      - store_artifacts:
+          path: test-reports
+          destination: test-reports
+
+
+  test-3.6:
+    <<: *full-test-template
+    docker:
+      - image: circleci/python:3.6-jessie
+
+  test-3.5:
+    <<: *full-test-template
+    docker:
+      - image: circleci/python:3.5-jessie
+
+  test-3.4:
+    <<: *full-test-template
+    docker:
+      - image: circleci/python:3.4-jessie
+
+  test-2.7:
+    <<: *full-test-template
+    docker:
+      - image: circleci/python:2.7-jessie
+
+workflows:
+  version: 2
+  tests:
+    jobs:
+      - test-3.7
+      - test-3.6
+      - test-3.5
+      - test-3.4
+      - test-2.7
