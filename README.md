@@ -1,3 +1,4 @@
+[![PyPI Version](https://shields.mitmproxy.org/pypi/v/logni.svg)](https://pypi.org/project/logni/)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/441b9bb67c0f4956b5d4bcfbe76e00c6)](https://www.codacy.com/manual/erikni/logni.py?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=erikni/logni.py&amp;utm_campaign=Badge_Grade)
 [![Github Releases](https://img.shields.io/github/downloads/atom/atom/latest/total.svg)](https://github.com/erikni/logni.py/releases)
 [![Build Status](https://api.travis-ci.org/erikni/logni.py.svg?branch=develop)](http://travis-ci.org/erikni/logni.py)
