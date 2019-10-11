@@ -44,5 +44,5 @@ setuptools.setup(name='logni',\
     'License :: OSI Approved :: MIT License',\
     'Topic :: System :: Logging'],\
   python_requires='>=2.7',\
-  keywords=['logging', 'logging-library', 'logger'],
+  keywords=['logging', 'logging-library', 'logger'],\
   license='MIT')
