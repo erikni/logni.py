@@ -256,15 +256,6 @@ class Logni(object):
 		return msg
 
 
-	def log(self, msg, params=(), **kw):
-		""" log message """
-
-		severity, priority = kw.iteritems().next()
-		self.__debug('log: severity=%s, priority=%s', (severity, priority))
-
-		return self.__log(msg, params, severity, priority)
-
-
 	def __log(self, msg, params=(), severity='DEBUG', priority=1):
 		""" log message """
 
