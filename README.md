@@ -3,6 +3,7 @@
 [![Github Releases](https://img.shields.io/github/downloads/atom/atom/latest/total.svg)](https://github.com/erikni/logni.py/releases)
 [![Build Status](https://api.travis-ci.org/erikni/logni.py.svg?branch=develop)](http://travis-ci.org/erikni/logni.py)
 [![Maintainability](https://api.codeclimate.com/v1/badges/27cb403386b704028bb5/maintainability)](https://codeclimate.com/github/erikni/logni.py/maintainability)
+[![Known Vulnerabilities](https://snyk.io//test/github/erikni/logni.py/badge.svg?targetFile=requirements.txt)](https://snyk.io//test/github/erikni/logni.py?targetFile=requirements.txt)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENCE)
 
 # logni.py
@@ -11,7 +12,7 @@ logni is a python library for event logging and application states
 ## How to install?
 - git (github)
 - pip (python packages)
-- 
+
 
 Install from Github
 ```
