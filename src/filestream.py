@@ -29,7 +29,7 @@ class FileStream(object):
 
 		# err: read file
 		try:
-			self.__fd = open(logFile, 'ab')
+			self.__fd = open(logFile, 'a')
 		except BaseException as emsg:
 			self.__util.debug('file="%s": err="%s"', (logFile, emsg))
 			return 1
@@ -44,7 +44,7 @@ class FileStream(object):
 		if not self.__fd:
 			return 0
 
-		self.__fd.write(logMessage)
+		self.__fd.write('%s\n' % logMessage)
 
 		if self.__config['flush']:
 			self.__fd.flush()
@@ -60,4 +60,5 @@ if __name__ == '__main__':
 		'flush':True,\
 		'debugMode':True,\
 		'timeFormat':TIME_FORMAT})
-	F.log2File('aaa\n')
+	F.log2File('aaa')
+	F.log2File('bbb')

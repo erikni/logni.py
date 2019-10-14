@@ -21,7 +21,7 @@ class Util(object):
 	def setPriority(self, priority=4):
 		""" set priority """
 
-		self.debug('__setPriority: priority=%s', priority)
+		self.debug('__setPriority: priority=%s', (priority,))
 
 		if not priority:
 			return 1

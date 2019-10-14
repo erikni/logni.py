@@ -257,7 +257,7 @@ class Logni(object):
 
 		# log message
 		xrand = '%x' % random.SystemRandom().randint(1, 4294967295)
-		logMessage = "%s [%s] %s: %s [%s] {%s}\n" % \
+		logMessage = "%s [%s] %s: %s [%s] {%s}" % \
 			(time.strftime(self.__config['timeFormat'], time.localtime()),\
 			os.getpid(),\
 			'%s%s' % (severity[0], priority),\

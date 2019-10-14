@@ -29,7 +29,7 @@ class ConsoleStream(object):
 		if not self.__config['console']:
 			return 0
 
-		sys.stderr.write(logMessage)
+		sys.stderr.write('%s\n' % logMessage)
 
 		if self.__config['flush']:
 			sys.stderr.flush()
