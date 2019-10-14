@@ -60,4 +60,4 @@ if __name__ == '__main__':
 		'flush':True,\
 		'debugMode':True,\
 		'timeFormat':TIME_FORMAT})
-	print F.log2File('aaa\n')
+	F.log2File('aaa\n')
