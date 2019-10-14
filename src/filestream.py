@@ -37,7 +37,7 @@ class FileStream(object):
 		return 0
 
 
-	def log2File(self, logMessage):
+	def log(self, logMessage):
 		""" log to file """
 
 		# file descriptor
@@ -60,5 +60,5 @@ if __name__ == '__main__':
 		'flush':True,\
 		'debugMode':True,\
 		'timeFormat':TIME_FORMAT})
-	F.log2File('aaa')
-	F.log2File('bbb')
+	F.log('aaa')
+	F.log('bbb')

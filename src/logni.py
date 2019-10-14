@@ -265,8 +265,8 @@ class Logni(object):
 			','.join(stackList))
 
 		# log to file / console
-		self.__file.log2File(logMessage)
-		self.__console.log2Console(logMessage)
+		self.__file.log(logMessage)
+		self.__console.log(logMessage)
 
 		return {'msg':msg, 'severity':severity, 'priority':priority, 'use':1, 'hash':xrand}
 

@@ -22,7 +22,7 @@ class ConsoleStream(object):
 		self.__config['console'] = console
 
 
-	def log2Console(self, logMessage):
+	def log(self, logMessage):
 		""" log to console / stderr """
 
 		# stderr / console
@@ -40,4 +40,4 @@ class ConsoleStream(object):
 if __name__ == '__main__':
 
 	C = ConsoleStream({'flush':False, 'console':True})
-	C.log2Console('bbb\n')
+	C.log('bbb\n')
