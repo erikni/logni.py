@@ -15,6 +15,18 @@
  ---
 
  logni is python library for event logging and application states
+
+
+ Example:
+
+ log = logni.Logni({'debugMode':True, 'mask':'ALL', 'console':True})
+
+ log.info('informational message with priority=4')
+ log.info('informational message with priority=3', priority=3)
+
+ log.debug('debug message [ts=%s] with priority=2', time.time(), priority=2)
+ log.error('error message with priority=1', priority=1)
+ log.warn('warning message with priority=1', priority=1)
 """
 
 import time
@@ -22,10 +34,13 @@ import random
 import traceback
 import os
 import os.path
-import sys
+import utilni
+import filestream
+import consolestream
 
 MAX_LEN = 10000
-
+CHARSET = 'utf8'
+TIME_FORMAT = '%Y/%m/%d %H:%M:%S'
 
 class Logni(object):
 	""" logni object """
@@ -36,9 +51,10 @@ class Logni(object):
 		# global
 		self.__config = {\
 			'debugMode': False,
-			'charset': 'utf8',
+			'charset': CHARSET,
 			'color': 0,
 			'console': 0,
+			'logFile': None,
 			'env': '',
 			'flush': 1,
 			'mask': 'ALL',
@@ -46,16 +62,18 @@ class Logni(object):
 			'strip': 0,
 			'stackOffset': 0,
 			'stackDepth': 1,
-			'timeFormat': '%Y/%m/%d %H:%M:%S',
+			'timeFormat': TIME_FORMAT,
 			'revision': ''}
-
-		self.__file = None
 
 		if not config:
 			config = {}
 
 		for cfgName in config:
 			self.__config[cfgName] = config[cfgName]
+
+		self.__util = utilni.Util(self.__config)
+		self.__file = filestream.FileStream(self.__config)
+		self.__console = consolestream.ConsoleStream(self.__config)
 
 		# colors: https://getbootstrap.com/docs/4.1/components/alerts/
 		# self.__logniColors = {\
@@ -67,17 +85,16 @@ class Logni(object):
 		#	'info':"#0c5460", # blue-green light
 		#	'light':"#818182", # svetle seda
 		#	'dark':"#1b1e21"} # tmave seda
+		#self.__logniSeverityColors = { \
+		#	'DEBUG': 'light',
+		#	'INFO': 'primary',
+		#	'WARN': 'warning',
+		#	'ERROR': 'danger',
+		#	'CRITICAL': 'danger'}
 
 		# severity
 		self.__logniMaskSeverity = {}
-		self.__logniSeverityColors = { \
-			'DEBUG': "light",
-			'INFO': "primary",
-			'WARN': "warning",
-			'ERROR': "danger",
-			'CRITICAL': "danger"}
-
-		self.__logniMaskSeverityFull = ["DEBUG", "INFO", "WARN", "ERROR", "CRITICAL"]
+		self.__logniMaskSeverityFull = ['DEBUG', 'INFO', 'WARN', 'ERROR', 'CRITICAL']
 
 		# severity (sortname)
 		self.__logniMaskSeverityShort = []
@@ -85,7 +102,7 @@ class Logni(object):
 			_short = severityName[:1]
 
 			self.__logniMaskSeverityShort.append(_short)
-			self.__logniMaskSeverity[_short] = self.__setPriority(5)
+			self.__logniMaskSeverity[_short] = self.__util.setPriority(5)
 
 		# default
 		self.mask('ALL')
@@ -98,21 +115,18 @@ class Logni(object):
 	def file(self, logFile):
 		""" file """
 
-		self.__debug('file=%s', logFile)
+		self.__config['logFile'] = logFile
+		return self.__file.file(logFile)
 
-		# err: file not found
-		if not os.path.isfile(logFile):
-			self.__debug('file="%s": not found"', logFile)
-			return 1
 
-		# err: read file
-		try:
-			self.__file = open(logFile, 'ab')
-		except BaseException as emsg:
-			self.__debug('file="%s": err="%s"', (logFile, emsg))
-			return 1
+	def console(self, console=False):
+		""" stderr / console """
 
-		return 0
+		self.__config['console'] = console
+		self.__util.debug('console=%s', console)
+		self.__console.console(console)
+
+	stderr = console
 
 
 	def __setMask(self, mask='ALL'):
@@ -124,10 +138,10 @@ class Logni(object):
 			return 1
 
 		for severityShort in self.__logniMaskSeverityShort:
-			self.__logniMaskSeverity[severityShort] = self.__setPriority(priority)
+			self.__logniMaskSeverity[severityShort] = self.__util.setPriority(priority)
 
-		self.__debug('mask.__setMask: self.__logniMaskSeverityShort=%s', self.__logniMaskSeverityShort)
-		self.__debug('mask.__setMask: self.__logniMaskSeverity=%s', self.__logniMaskSeverity)
+		self.__util.debug('__setMask: self.__logniMaskSeverityShort=%s', self.__logniMaskSeverityShort)
+		self.__util.debug('__setMask: self.__logniMaskSeverity=%s', self.__logniMaskSeverity)
 
 		return 0
 
@@ -135,12 +149,12 @@ class Logni(object):
 	def mask(self, mask='ALL'):
 		""" mask """
 
-		self.__debug('mask=%s', mask)
+		self.__util.debug('mask=%s', mask)
 
 		# default mask=ALL
 		if not mask:
 			mask = 'ALL'
-			self.__debug('mask=ALL')
+			self.__util.debug('mask=ALL')
 
 
 		# log mask = ALL | OFF
@@ -150,7 +164,7 @@ class Logni(object):
 		# len is wrong
 		lenMask = len(mask)
 		if lenMask not in (2, 4, 6, 8, 10):
-			self.__debug('mask=%s: error len=%s', (mask, lenMask))
+			self.__util.debug('mask=%s: error len=%s', (mask, lenMask))
 			return 1
 
 		# set default MASK=0FF
@@ -160,107 +174,59 @@ class Logni(object):
 		for no in range(0, lenMask, 2):
 
 			_len = mask[no]
-			_priority = self.__setPriority(mask[no+1])
+			_priority = self.__util.setPriority(mask[no+1])
 
 			self.__logniMaskSeverity[_len] = _priority
-			self.__debug('mask: len=%s, priority=%s', (_len, _priority))
+			self.__util.debug('mask: len=%s, priority=%s', (_len, _priority))
 
 			del _len, _priority
 
-		self.__debug('mask: self.__logniMaskSeverity=%s', self.__logniMaskSeverity)
+		self.__util.debug('mask: self.__logniMaskSeverity=%s', self.__logniMaskSeverity)
 		self.__config['mask'] = mask
 
 		return 0
-
-
-	def console(self, console=0):
-		""" stderr / console """
-
-		self.__config['console'] = console
-		self.__debug('console=%s', console)
-
-	stderr = console
-
-
-	def maxLen(self, maxLen=MAX_LEN):
-		""" stderr / console """
-
-		self.__config['maxLen'] = maxLen
-		self.__debug('maxLen=%s', maxLen)
-
-
-	def __setPriority(self, priority=4):
-		""" set priority """
-
-		self.__debug('__setPriority: priority=%s', priority)
-
-		if not priority:
-			return 1
-
-		priority = abs(int(priority))
-
-		# priority
-		if priority not in range(1, 5+1):
-			priority = 5
-
-		return priority
 
 
 	# log use?
 	def __logUse(self, severity='', priority=1):
 		""" use log ? """
 
-		self.__debug('log.__logUse: severity=%s, priority=%s', (severity, priority))
+		self.__util.debug('log.__logUse: severity=%s, priority=%s', (severity, priority))
 
-		priority = self.__setPriority(priority)
+		priority = self.__util.setPriority(priority)
 
 		# if mask=ALL
 		if self.__config['mask'] == 'ALL':
-			self.__debug('log.__logUse: severity=%s, msg priority=%s >= mask=ALL -> msg log is VISIBLE',\
+			self.__util.debug('log.__logUse: severity=%s, msg priority=%s ' + \
+				'>= mask=ALL -> msg log is VISIBLE',\
 				(severity, priority))
 			return 0
 
 		if severity[0] not in self.__logniMaskSeverity:
-			self.__debug('log.__logUse: severity=%s not exist', severity)
+			self.__util.debug('log.__logUse: severity=%s not exist', severity)
 			return 1
 
 		# message hidden
 		_priority = self.__logniMaskSeverity[severity[0]]
 		if priority < _priority:
-			self.__debug('log.__logUse: severity=%s, msg priority=%s < ' + \
+			self.__util.debug('log.__logUse: severity=%s, msg priority=%s < ' + \
 				'mask priority=%s -> msg log is HIDDEN',\
 				(severity, priority, _priority))
 			return 1
 
 		# message visible
-		self.__debug('log.__logUse: severity=%s, msg priority=%s >= ' + \
+		self.__util.debug('log.__logUse: severity=%s, msg priority=%s >= ' + \
 			'mask priority=%s -> msg log is VISIBLE',\
 			(severity, priority, _priority))
 
 		return 0
 
 
-	# maxlen
-	def __logMaxLen(self, msg):
-		""" max length """
-
-		# maxlen
-		msgLen = len(msg)
-		if msgLen < self.__config['maxLen']:
-			return msg
-
-		msg = msg[:self.__config['maxLen']] + ' ...'
-		self.__debug('log: msgLen=%s > global maxLen=%s -> because msg short',\
-			(msgLen, self.__config['maxLen']))
-
-		return msg
-
-
 	def __log(self, msg, params=(), severity='DEBUG', priority=1):
 		""" log message """
 
 		# priority
-		priority = self.__setPriority(priority)
+		priority = self.__util.setPriority(priority)
 
 		# log use?
 		if self.__logUse(severity, priority) == 1:
@@ -280,7 +246,7 @@ class Logni(object):
 			msg = msg.replace('\n', ' ').strip()
 
 		# max len
-		msg = self.__logMaxLen(msg)
+		msg = self.__util.logMaxLen(msg)
 
 		# stack
 		stackList = []
@@ -299,46 +265,20 @@ class Logni(object):
 			','.join(stackList))
 
 		# log to file / console
-		self.__log2File(logMessage)
-		self.__log2Console(logMessage)
+		self.__file.log2File(logMessage)
+		self.__console.log2Console(logMessage)
 
-		return {'msg':msg, 'severity':severity, 'priority':priority, 'use':1}
-
-
-	def __log2File(self, logMessage):
-		""" log to file """
-
-		# file descriptor
-		if not self.__file:
-			return 0
-
-		self.__file.write(logMessage)
-
-		if self.__config['flush']:
-			self.__file.flush()
-
-		return 0
-
-
-	def __log2Console(self, logMessage):
-		""" log to console / stderr """
-
-		# stderr / console
-		if not self.__config['console']:
-			return 0
-
-		sys.stderr.write(logMessage)
-
-		if self.__config['flush']:
-			sys.stderr.flush()
-
-		return 0
+		return {'msg':msg, 'severity':severity, 'priority':priority, 'use':1, 'hash':xrand}
 
 
 	# ---
 
 	def critical(self, msg, params=(), priority=4):
-		""" critical / fatal message """
+		"""
+		Critical: critical / fatal message
+
+		Alias: fatal()
+		"""
 
 		return self.__log(msg, params, 'CRITICAL', priority)
 
@@ -346,7 +286,11 @@ class Logni(object):
 
 
 	def error(self, msg, params=(), priority=4):
-		""" err / error message """
+		"""
+		Error: error message
+
+		Alias: err()
+		"""
 
 		return self.__log(msg, params, 'ERR', priority)
 
@@ -354,7 +298,12 @@ class Logni(object):
 
 
 	def warn(self, msg, params=(), priority=4):
-		""" warn / warning message """
+		"""
+		Warn: warning message
+
+		Alias: warning()
+
+		"""
 
 		return self.__log(msg, params, 'WARN', priority)
 
@@ -362,7 +311,11 @@ class Logni(object):
 
 
 	def info(self, msg, params=(), priority=4):
-		""" info / informational message """
+		"""
+		Info: informational messages
+
+		Alias: informational()
+		"""
 
 		return self.__log(msg, params, 'INFO', priority)
 
@@ -370,32 +323,44 @@ class Logni(object):
 
 
 	def debug(self, msg, params=(), priority=4):
-		""" dbg / debug message """
+		"""
+		Debug: debug-level messages
+
+		Alias: dbg()
+		"""
 
 		return self.__log(msg, params, 'DEBUG', priority)
 
 	dbg = debug
 
 
-	# ----
+	def emergency(self, msg, params=()):
+		"""
+		Emergency: system is unusable
 
-	def __debug(self, msg, val=()):
-		""" debug mode log """
+		Alias: critical(priority=4)
+		"""
+		return self.critical(msg, params, priority=4)
 
-		if not self.__config['debugMode']:
-			return 1
 
-		tf = time.strftime(self.__config['timeFormat'], time.localtime())
-		getpid = os.getpid()
-		msgVal = msg % val
+	def alert(self, msg, params=()):
+		"""
+		Alert: action must be taken immediately
 
-		if val:
-			msgVal = msg % val
-			sys.stderr.write('%s [%s] DEBUG: %s\n' % (tf, getpid, msgVal))
-			return 0
+		Alias: error(priority=3)
+		"""
 
-		sys.stderr.write('%s [%s] DEBUG: %s\n' % (tf, getpid, msg))
-		return 0
+		return self.error(msg, params, priority=3)
+
+
+	def notice(self, msg, params=()):
+		"""
+		Notice: normal but significant condition
+
+		Alias: info(priority=1)
+		"""
+
+		return self.info(msg, params, priority=1)
 
 
 # run: python test/example/example.py

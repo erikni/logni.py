@@ -24,16 +24,25 @@ install:
 
 # command to run tests
 script:
-  - echo "pylint --errors-only src/logni.py ... "
-  - pylint --errors-only src/logni.py
+  - echo "pylint --errors-only src/*.py ... "
+  - pylint --errors-only src/*.py
 
   - echo "pytest ... "
   - pytest
+ 
+  - echo "example for utils ... "
+  - python src/utilni.py
+
+  - echo "example for filestream ... "
+  - python src/filestream.py
+
+  - echo "example for consolestream ... "
+  - python src/consolestream.py
 
   - echo "run logni.py ... "
   - python src/logni.py
 
-  - echo "run example.py ... "
+  - echo "run examples ... "
   - python test/example/basic.py
 
   - echo "codecov ... "

@@ -14,3 +14,4 @@ debian/python-module-stampdir*
 /dist/
 /logni.egg-info
 .pypirc
+/venv
