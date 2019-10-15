@@ -19,7 +19,7 @@ Install from Github
 $ git clone https://github.com/erikni/logni.py.git
 $ cd logni.py
 $ pip install -r requirements.txt
-$ python test/example/basic.py
+$ python test/example/basic_example.py
 ```
 
 Install with PIP (Python Package Installer)
