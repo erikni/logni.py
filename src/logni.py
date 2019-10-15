@@ -46,7 +46,9 @@ class Logni(object):
 	""" logni object """
 
 	def __init__(self, config=None):
-		""" init """
+		""" Init
+
+		@param config """
 
 		# global
 		self.__config = {\
@@ -113,24 +115,36 @@ class Logni(object):
 
 
 	def file(self, logFile):
-		""" file """
+		""" File
+
+		@param logFile
+
+		@return exitcode """
 
 		self.__config['logFile'] = logFile
 		return self.__file.file(logFile)
 
 
 	def console(self, console=False):
-		""" stderr / console """
+		""" Stderr / console
+
+		@param console
+
+		@return exitcode """
 
 		self.__config['console'] = console
 		self.__util.debug('console=%s', console)
-		self.__console.console(console)
+		return self.__console.console(console)
 
 	stderr = console
 
 
 	def __setMask(self, mask='ALL'):
-		""" set mask """
+		""" Set ALL | OFF mask
+
+		@param mask
+
+		@return exitcode """
 
 		maskPriority = {'ALL': 1, 'OFF': 5}
 		priority = maskPriority.get(mask)
@@ -147,7 +161,11 @@ class Logni(object):
 
 
 	def mask(self, mask='ALL'):
-		""" mask """
+		""" Set mask
+
+		@param mask
+
+		@return exitcode """
 
 		self.__util.debug('mask=%s', mask)
 
@@ -189,7 +207,12 @@ class Logni(object):
 
 	# log use?
 	def __logUse(self, severity='', priority=1):
-		""" use log ? """
+		""" Use log?
+
+		@param severity
+		@param priority
+
+		@return exitcode """
 
 		self.__util.debug('log.__logUse: severity=%s, priority=%s', (severity, priority))
 
@@ -223,7 +246,14 @@ class Logni(object):
 
 
 	def __log(self, msg, params=(), severity='DEBUG', priority=1):
-		""" log message """
+		""" Log message
+
+		@param msg
+		@param params
+		@param severity
+		@param priority
+
+		@return struct """
 
 		# priority
 		priority = self.__util.setPriority(priority)
@@ -274,11 +304,15 @@ class Logni(object):
 	# ---
 
 	def critical(self, msg, params=(), priority=4):
-		"""
-		Critical: critical / fatal message
+		""" Critical: critical / fatal message
 
 		Alias: fatal()
-		"""
+
+		@param msg
+		@param params
+		@params priority
+
+		@return struct """
 
 		return self.__log(msg, params, 'CRITICAL', priority)
 
@@ -286,11 +320,15 @@ class Logni(object):
 
 
 	def error(self, msg, params=(), priority=4):
-		"""
-		Error: error message
+		""" Error: error message
 
 		Alias: err()
-		"""
+
+		@param msg
+		@param params
+		@params priority
+
+		@return struct """
 
 		return self.__log(msg, params, 'ERR', priority)
 
@@ -298,12 +336,15 @@ class Logni(object):
 
 
 	def warn(self, msg, params=(), priority=4):
-		"""
-		Warn: warning message
+		""" Warn: warning message
 
 		Alias: warning()
 
-		"""
+		@param msg
+		@param params
+		@params priority
+
+		@return struct """
 
 		return self.__log(msg, params, 'WARN', priority)
 
@@ -311,11 +352,15 @@ class Logni(object):
 
 
 	def info(self, msg, params=(), priority=4):
-		"""
-		Info: informational messages
+		""" Info: informational messages
 
 		Alias: informational()
-		"""
+
+		@param msg
+		@param params
+		@params priority
+
+		@return struct """
 
 		return self.__log(msg, params, 'INFO', priority)
 
@@ -323,11 +368,15 @@ class Logni(object):
 
 
 	def debug(self, msg, params=(), priority=4):
-		"""
-		Debug: debug-level messages
+		""" Debug: debug-level messages
 
 		Alias: dbg()
-		"""
+
+		@param msg
+		@param params
+		@params priority
+
+		@return struct """
 
 		return self.__log(msg, params, 'DEBUG', priority)
 
@@ -335,30 +384,39 @@ class Logni(object):
 
 
 	def emergency(self, msg, params=()):
-		"""
-		Emergency: system is unusable
+		""" Emergency: system is unusable
 
 		Alias: critical(priority=4)
-		"""
+
+		@param msg
+		@param params
+
+		@return struct """
 		return self.critical(msg, params, priority=4)
 
 
 	def alert(self, msg, params=()):
-		"""
-		Alert: action must be taken immediately
+		""" Alert: action must be taken immediately
 
 		Alias: error(priority=3)
-		"""
+
+		@param msg
+		@param params
+
+		@return struct """
 
 		return self.error(msg, params, priority=3)
 
 
 	def notice(self, msg, params=()):
-		"""
-		Notice: normal but significant condition
+		""" Notice: normal but significant condition
 
 		Alias: info(priority=1)
-		"""
+
+		@param msg
+		@param params
+
+		@return struct """
 
 		return self.info(msg, params, priority=1)
 

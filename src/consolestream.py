@@ -11,19 +11,28 @@ class ConsoleStream(object):
 	""" Console Stream """
 
 	def __init__(self, config):
-		""" init """
+		""" Init
+
+		@param config
+		"""
 
 		self.__config = config
 
 
 	def console(self, console=False):
-		""" console / stderr """
+		""" Console / stderr
+
+		@param console
+		"""
 
 		self.__config['console'] = console
 
 
 	def log(self, logMessage):
-		""" log to console / stderr """
+		""" Log to console / stderr
+
+		@param logMessage
+		"""
 
 		# stderr / console
 		if not self.__config['console']:

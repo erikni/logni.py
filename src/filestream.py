@@ -11,7 +11,10 @@ class FileStream(object):
 	""" file stream """
 
 	def __init__(self, config):
-		""" init """
+		""" Init
+
+		@param config
+		"""
 
 		self.__fd = None
 		self.__util = utilni.Util(config)
@@ -20,7 +23,12 @@ class FileStream(object):
 
 
 	def file(self, logFile):
-		""" file """
+		""" File
+
+		@param logFile
+
+		@return exitcode
+		"""
 
 		self.__util.debug('file=%s', logFile)
 
@@ -38,7 +46,12 @@ class FileStream(object):
 
 
 	def log(self, logMessage):
-		""" log to file """
+		""" Log to file
+
+		@param logMessage
+
+		@return exitcode
+		"""
 
 		# file descriptor
 		if not self.__fd:

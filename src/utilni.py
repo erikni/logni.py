@@ -14,12 +14,21 @@ class Util(object):
 	""" Util """
 
 	def __init__(self, config):
+		""" Init
+
+		@param config
+		"""
 
 		self.__config = config
 
 
 	def setPriority(self, priority=4):
-		""" set priority """
+		""" Set priority
+
+		@param priority
+
+		@return priority
+		"""
 
 		self.debug('__setPriority: priority=%s', (priority,))
 
@@ -37,7 +46,12 @@ class Util(object):
 
 	# maxlen
 	def logMaxLen(self, msg):
-		""" max length """
+		""" Max length
+
+		@param msg
+
+		@return msg
+		"""
 
 		# maxlen
 		msgLen = len(msg)
@@ -51,23 +65,30 @@ class Util(object):
 		return msg
 
 
-	def debug(self, msg, val=()):
-		""" debug mode log """
+	def debug(self, msg, params=()):
+		""" Debug mode log
+
+		@param msg
+		@param params
+
+		@return exitcode
+		"""
 
 		if not self.__config['debugMode']:
 			return 1
 
 		tf = time.strftime(self.__config['timeFormat'], time.localtime())
 		getpid = os.getpid()
-		msgVal = msg % val
+		msgVal = msg % params
 
-		if val:
-			msgVal = msg % val
+		if params:
+			msgVal = msg % params
 			sys.stderr.write('%s [%s] DEBUG: %s\n' % (tf, getpid, msgVal))
 			return 0
 
 		sys.stderr.write('%s [%s] DEBUG: %s\n' % (tf, getpid, msg))
 		return 0
+
 
 if __name__ == '__main__':
 
