@@ -22,6 +22,9 @@ install:
   - sudo pip install -U pytest
   - sudo pip install codecov
 
+before_script:
+  - export PYTHONPATH=$PYTHONPATH:$PWD/src
+
 # command to run tests
 script:
   - echo "pylint --errors-only src/*.py ... "
@@ -43,7 +46,7 @@ script:
   - python src/logni.py
 
   - echo "run examples ... "
-  - python test/example/basic.py
+  - python test/example/basic_example.py
 
   - echo "codecov ... "
   - codecov --token=05aaf35c-89cb-419f-9012-e534e1248e3f

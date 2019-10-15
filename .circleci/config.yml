@@ -60,7 +60,7 @@ jobs:
           name: run examples
           command: |
             . venv/bin/activate
-            python test/example/basic.py
+            python test/example/basic_example.py
 
       # run tests!
       - run:

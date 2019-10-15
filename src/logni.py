@@ -230,7 +230,7 @@ class Logni(object):
 
 		# log use?
 		if self.__logUse(severity, priority) == 1:
-			return {'msg':msg, 'severity':severity, 'priority':priority, 'use':0}
+			return {'msg':msg, 'severity':severity, 'priority':priority, 'use':False}
 
 		try:
 			msg = msg % params
@@ -268,7 +268,7 @@ class Logni(object):
 		self.__file.log(logMessage)
 		self.__console.log(logMessage)
 
-		return {'msg':msg, 'severity':severity, 'priority':priority, 'use':1, 'hash':xrand}
+		return {'msg':msg, 'severity':severity, 'priority':priority, 'use':True, 'hash':xrand}
 
 
 	# ---
