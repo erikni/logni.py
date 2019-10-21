@@ -16,7 +16,6 @@
 
  logni is python library for event logging and application states
 
-
  Example:
 
  log = logni.Logni({'debugMode':True, 'mask':'ALL', 'console':True})
@@ -34,6 +33,7 @@ import random
 import traceback
 import os
 import os.path
+import functools
 import utilni
 import filestream
 import consolestream
@@ -77,23 +77,6 @@ class Logni(object):
 		self.__file = filestream.FileStream(self.__config)
 		self.__console = consolestream.ConsoleStream(self.__config)
 
-		# colors: https://getbootstrap.com/docs/4.1/components/alerts/
-		# self.__logniColors = {\
-		#	'primary':"#004085", # blue light
-		#	'secondary':"#383d41", # seda
-		#	'success':"#155724", # green light
-		#	'danger':"#721c24", # ping light
-		#	'warning':"#856404", # yellow light
-		#	'info':"#0c5460", # blue-green light
-		#	'light':"#818182", # svetle seda
-		#	'dark':"#1b1e21"} # tmave seda
-		#self.__logniSeverityColors = { \
-		#	'DEBUG': 'light',
-		#	'INFO': 'primary',
-		#	'WARN': 'warning',
-		#	'ERROR': 'danger',
-		#	'CRITICAL': 'danger'}
-
 		# severity
 		self.__logniMaskSeverity = {}
 		self.__logniMaskSeverityFull = ['DEBUG', 'INFO', 'WARN', 'ERROR', 'CRITICAL']
@@ -126,7 +109,7 @@ class Logni(object):
 
 
 	def console(self, console=False):
-		""" Stderr / console
+		""" Console (stderr)
 
 		@param console
 
@@ -306,8 +289,6 @@ class Logni(object):
 	def critical(self, msg, params=(), priority=1):
 		""" Critical: critical / fatal message
 
-		Alias: fatal()
-
 		@param msg
 		@param params
 		@param priority
@@ -321,8 +302,6 @@ class Logni(object):
 
 	def error(self, msg, params=(), priority=1):
 		""" Error: error message
-
-		Alias: err()
 
 		@param msg
 		@param params
@@ -338,8 +317,6 @@ class Logni(object):
 	def warn(self, msg, params=(), priority=1):
 		""" Warn: warning message
 
-		Alias: warning()
-
 		@param msg
 		@param params
 		@param priority
@@ -353,8 +330,6 @@ class Logni(object):
 
 	def info(self, msg, params=(), priority=1):
 		""" Info: informational messages
-
-		Alias: informational()
 
 		@param msg
 		@param params
@@ -419,6 +394,24 @@ class Logni(object):
 		@return struct """
 
 		return self.info(msg, params, priority=1)
+
+
+	def timer(self, func):
+		""" Timer: print the runtime of the decorated function """
+
+		@functools.wraps(func)
+		def logWrapperTimer(*args, **kwargs):
+			""" log wrapper timer """
+
+			startTime = time.time()
+			ret = func(*args, **kwargs)
+			runTime = time.time() - startTime
+
+			self.info('func %s() in %s secs', (func.__name__, runTime), priority=1)
+
+			return ret
+
+		return logWrapperTimer
 
 
 # run: python test/example/example.py
