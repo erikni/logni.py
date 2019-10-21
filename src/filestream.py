@@ -33,7 +33,8 @@ class FileStream(object):
 		self.__util.debug('file=%s', logFile)
 
 		if not logFile:
-			return 1
+			self.__util.debug('file=%s: logFile not input')
+			return 0
 
 		# err: read file
 		try:

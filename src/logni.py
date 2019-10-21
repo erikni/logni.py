@@ -54,14 +54,14 @@ class Logni(object):
 		self.__config = {\
 			'debugMode': False,
 			'charset': CHARSET,
-			'color': 0,
-			'console': 0,
+			'color': False,
+			'console': True,
 			'logFile': None,
 			'env': '',
-			'flush': 1,
+			'flush': True,
 			'mask': 'ALL',
 			'maxLen': MAX_LEN,
-			'strip': 0,
+			'strip': True,
 			'stackOffset': 0,
 			'stackDepth': 1,
 			'timeFormat': TIME_FORMAT,
@@ -303,14 +303,14 @@ class Logni(object):
 
 	# ---
 
-	def critical(self, msg, params=(), priority=4):
+	def critical(self, msg, params=(), priority=1):
 		""" Critical: critical / fatal message
 
 		Alias: fatal()
 
 		@param msg
 		@param params
-		@params priority
+		@param priority
 
 		@return struct """
 
@@ -319,14 +319,14 @@ class Logni(object):
 	fatal = critical
 
 
-	def error(self, msg, params=(), priority=4):
+	def error(self, msg, params=(), priority=1):
 		""" Error: error message
 
 		Alias: err()
 
 		@param msg
 		@param params
-		@params priority
+		@param priority
 
 		@return struct """
 
@@ -335,14 +335,14 @@ class Logni(object):
 	err = error
 
 
-	def warn(self, msg, params=(), priority=4):
+	def warn(self, msg, params=(), priority=1):
 		""" Warn: warning message
 
 		Alias: warning()
 
 		@param msg
 		@param params
-		@params priority
+		@param priority
 
 		@return struct """
 
@@ -351,14 +351,14 @@ class Logni(object):
 	warning = warn
 
 
-	def info(self, msg, params=(), priority=4):
+	def info(self, msg, params=(), priority=1):
 		""" Info: informational messages
 
 		Alias: informational()
 
 		@param msg
 		@param params
-		@params priority
+		@param priority
 
 		@return struct """
 
@@ -367,14 +367,14 @@ class Logni(object):
 	informational = info
 
 
-	def debug(self, msg, params=(), priority=4):
+	def debug(self, msg, params=(), priority=1):
 		""" Debug: debug-level messages
 
 		Alias: dbg()
 
 		@param msg
 		@param params
-		@params priority
+		@param priority
 
 		@return struct """
 
