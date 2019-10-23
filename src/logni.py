@@ -45,27 +45,29 @@ TIME_FORMAT = '%Y/%m/%d %H:%M:%S'
 class Logni(object):
 	""" logni object """
 
+	# global
+	__config = {\
+		'debugMode': False,
+		'charset': CHARSET,
+		'color': False,
+		'console': True,
+		'logFile': None,
+		'env': '',
+		'flush': True,
+		'name': 'LOG',
+		'mask': 'ALL',
+		'maxLen': MAX_LEN,
+		'strip': True,
+		'stackOffset': 0,
+		'stackDepth': 1,
+		'timeFormat': TIME_FORMAT,
+		'revision': ''}
+
+
 	def __init__(self, config=None):
 		""" Init
 
 		@param config """
-
-		# global
-		self.__config = {\
-			'debugMode': False,
-			'charset': CHARSET,
-			'color': False,
-			'console': True,
-			'logFile': None,
-			'env': '',
-			'flush': True,
-			'mask': 'ALL',
-			'maxLen': MAX_LEN,
-			'strip': True,
-			'stackOffset': 0,
-			'stackDepth': 1,
-			'timeFormat': TIME_FORMAT,
-			'revision': ''}
 
 		if not config:
 			config = {}
@@ -73,6 +75,7 @@ class Logni(object):
 		for cfgName in config:
 			self.__config[cfgName] = config[cfgName]
 
+		self.__name = self.__config.get('name', 'LOG').upper()
 		self.__util = utilni.Util(self.__config)
 		self.__file = filestream.FileStream(self.__config)
 		self.__console = consolestream.ConsoleStream(self.__config)
@@ -81,7 +84,7 @@ class Logni(object):
 		self.__logniMaskSeverity = {}
 		self.__logniMaskSeverityFull = ['DEBUG', 'INFO', 'WARN', 'ERROR', 'CRITICAL']
 
-		# severity (sortname)
+		# severity (shortname)
 		self.__logniMaskSeverityShort = []
 		for severityName in self.__logniMaskSeverityFull:
 			_short = severityName[:1]
@@ -90,11 +93,8 @@ class Logni(object):
 			self.__logniMaskSeverity[_short] = self.__util.setPriority(5)
 
 		# default
-		self.mask('ALL')
-		self.console(True)
-
-		if config.get('mask'):
-			self.mask(config['mask'])
+		self.mask(self.__config.get('mask', 'ALL'))
+		self.console(self.__config.get('console', True))
 
 
 	def file(self, logFile):
@@ -123,13 +123,13 @@ class Logni(object):
 
 
 	def __setMask(self, mask='ALL'):
-		""" Set ALL | OFF mask
+		""" Set ALL | OFF / NOTSET mask
 
 		@param mask
 
 		@return exitcode """
 
-		maskPriority = {'ALL': 1, 'OFF': 5}
+		maskPriority = {'ALL': 1, 'OFF': 5, 'NOTSET': 5}
 		priority = maskPriority.get(mask)
 		if not priority:
 			return 1
@@ -228,7 +228,7 @@ class Logni(object):
 		return 0
 
 
-	def __log(self, msg, params=(), severity='DEBUG', priority=1):
+	def log(self, severity='DEBUG', msg='', params=(), priority=1):
 		""" Log message
 
 		@param msg
@@ -270,9 +270,10 @@ class Logni(object):
 
 		# log message
 		xrand = '%x' % random.SystemRandom().randint(1, 4294967295)
-		logMessage = "%s [%s] %s: %s [%s] {%s}" % \
+		logMessage = "%s [%s] %s %s: %s [%s] {%s}" % \
 			(time.strftime(self.__config['timeFormat'], time.localtime()),\
 			os.getpid(),\
+			self.__name,\
 			'%s%s' % (severity[0], priority),\
 			msg, xrand,\
 			','.join(stackList))
@@ -295,7 +296,7 @@ class Logni(object):
 
 		@return struct """
 
-		return self.__log(msg, params, 'CRITICAL', priority)
+		return self.log('CRITICAL', msg, params, priority)
 
 	fatal = critical
 
@@ -309,7 +310,7 @@ class Logni(object):
 
 		@return struct """
 
-		return self.__log(msg, params, 'ERR', priority)
+		return self.log('ERR', msg, params, priority)
 
 	err = error
 
@@ -323,7 +324,7 @@ class Logni(object):
 
 		@return struct """
 
-		return self.__log(msg, params, 'WARN', priority)
+		return self.log('WARN', msg, params, priority)
 
 	warning = warn
 
@@ -337,7 +338,7 @@ class Logni(object):
 
 		@return struct """
 
-		return self.__log(msg, params, 'INFO', priority)
+		return self.log('INFO', msg, params, priority)
 
 	informational = info
 
@@ -345,15 +346,13 @@ class Logni(object):
 	def debug(self, msg, params=(), priority=1):
 		""" Debug: debug-level messages
 
-		Alias: dbg()
-
 		@param msg
 		@param params
 		@param priority
 
 		@return struct """
 
-		return self.__log(msg, params, 'DEBUG', priority)
+		return self.log('DEBUG', msg, params, priority)
 
 	dbg = debug
 
@@ -361,24 +360,15 @@ class Logni(object):
 	def emergency(self, msg, params=()):
 		""" Emergency: system is unusable
 
-		Alias: critical(priority=4)
+		critical(msg, priority=4) """
 
-		@param msg
-		@param params
-
-		@return struct """
 		return self.critical(msg, params, priority=4)
 
 
 	def alert(self, msg, params=()):
 		""" Alert: action must be taken immediately
 
-		Alias: error(priority=3)
-
-		@param msg
-		@param params
-
-		@return struct """
+		error(msg, priority=3) """
 
 		return self.error(msg, params, priority=3)
 
@@ -386,12 +376,7 @@ class Logni(object):
 	def notice(self, msg, params=()):
 		""" Notice: normal but significant condition
 
-		Alias: info(priority=1)
-
-		@param msg
-		@param params
-
-		@return struct """
+		info(msg, priority=1) """
 
 		return self.info(msg, params, priority=1)
 
@@ -405,9 +390,9 @@ class Logni(object):
 
 			startTime = time.time()
 			ret = func(*args, **kwargs)
-			runTime = time.time() - startTime
+			runTime = int((time.time() - startTime) * 1000)
 
-			self.info('func %s() in %s secs', (func.__name__, runTime), priority=1)
+			self.info('func %s() in %sms', (func.__name__, runTime), priority=1)
 
 			return ret
 

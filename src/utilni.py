@@ -20,6 +20,7 @@ class Util(object):
 		"""
 
 		self.__config = config
+		self.__name = config.get('name', '').upper()
 
 
 	def setPriority(self, priority=4):
@@ -83,10 +84,10 @@ class Util(object):
 
 		if params:
 			msgVal = msg % params
-			sys.stderr.write('%s [%s] DEBUG: %s\n' % (tf, getpid, msgVal))
+			sys.stderr.write('%s [%s] %s D0: %s\n' % (tf, getpid, self.__name, msgVal))
 			return 0
 
-		sys.stderr.write('%s [%s] DEBUG: %s\n' % (tf, getpid, msg))
+		sys.stderr.write('%s [%s] %s D0: %s\n' % (tf, getpid, self.__name, msg))
 		return 0
 
 
@@ -95,7 +96,7 @@ if __name__ == '__main__':
 	MAX_LEN = 10000
 	TIME_FORMAT = '%Y/%m/%d %H:%M:%S'
 
-	U = Util({'maxLen':MAX_LEN, 'timeFormat':TIME_FORMAT, 'debugMode':True})
+	U = Util({'maxLen':MAX_LEN, 'timeFormat':TIME_FORMAT, 'debugMode':True, 'name':'TEST'})
 
 	U.setPriority(0)
 	U.setPriority(1)

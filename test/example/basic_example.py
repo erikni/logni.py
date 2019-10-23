@@ -13,7 +13,7 @@ sys.path.append('src')
 import logni
 
 
-LOG = logni.Logni({'mask':'I3E1C1W2', 'debugMode':True})
+LOG = logni.Logni({'mask':'I3E1C1W2', 'debugMode':True, 'name':'logname'})
 
 
 # console
