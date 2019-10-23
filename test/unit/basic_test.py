@@ -27,29 +27,30 @@ class TestStringMethods(unittest.TestCase):
 		Method tests basic structure for config
 		"""
 
-		self.assertTrue('debugMode' in config)
-		self.assertTrue('charset' in config)
-		self.assertTrue('color' in config)
-		self.assertTrue('console' in config)
-		self.assertTrue('logFile' in config)
-		self.assertTrue('env' in config)
-		self.assertTrue('flush' in config)
-		self.assertTrue('mask' in config)
-		self.assertTrue('maxLen' in config)
-		self.assertTrue('strip' in config)
-		self.assertTrue('stackOffset' in config)
-		self.assertTrue('stackDepth' in config)
-		self.assertTrue('timeFormat' in config)
+		self.assertTrue('debugMode' in config, msg='debugMode must be input')
+		self.assertTrue('charset' in config, msg='charset must be input')
+		self.assertTrue('color' in config, msg='color must be input')
+		self.assertTrue('console' in config, msg='console must be input')
+		self.assertTrue('logFile' in config, msg='logFile must be input')
+		self.assertTrue('env' in config, msg='env must be input')
+		self.assertTrue('flush' in config, msg='flush must be input')
+		self.assertTrue('mask' in config, msg='mask must be input')
+		self.assertTrue('name' in config, msg='name must be input')
+		self.assertTrue('maxLen' in config, msg='maxLen must be input')
+		self.assertTrue('strip' in config, msg='strip must be input')
+		self.assertTrue('stackOffset' in config, msg='stackOffset must be input')
+		self.assertTrue('stackDepth' in config, msg='stackDepth must be input')
+		self.assertTrue('timeFormat' in config, msg='timeFormat must be input')
 
-		self.assertTrue(isinstance(config['debugMode'], bool))
-		self.assertTrue(isinstance(config['color'], bool))
-		self.assertTrue(isinstance(config['console'], bool))
-		self.assertTrue(isinstance(config['flush'], bool))
-		self.assertTrue(isinstance(config['strip'], bool))
+		self.assertTrue(isinstance(config['debugMode'], bool), msg='debugMode must be boolean')
+		self.assertTrue(isinstance(config['color'], bool), msg='color must be boolean')
+		self.assertTrue(isinstance(config['console'], bool), msg='console must be boolean')
+		self.assertTrue(isinstance(config['flush'], bool), msg='flush must be boolean')
+		self.assertTrue(isinstance(config['strip'], bool), msg='strip must be boolean')
 
-		self.assertTrue(isinstance(config['maxLen'], int))
-		self.assertTrue(isinstance(config['stackOffset'], int))
-		self.assertTrue(isinstance(config['stackDepth'], int))
+		self.assertTrue(isinstance(config['maxLen'], int), msg='maxLen must be integer')
+		self.assertTrue(isinstance(config['stackOffset'], int), msg='stackOffset must be integer')
+		self.assertTrue(isinstance(config['stackDepth'], int), msg='stackDepth must be integer')
 
 
 	def __checkLogStructure(self, retLog):
@@ -57,13 +58,13 @@ class TestStringMethods(unittest.TestCase):
 		Method tests basic structure for OK return call
 		"""
 
-		self.assertTrue('msg' in retLog)
-		self.assertTrue('severity' in retLog)
-		self.assertTrue('priority' in retLog)
-		self.assertTrue('use' in retLog)
+		self.assertTrue('msg' in retLog, msg='key msg: must be in ouput structure')
+		self.assertTrue('severity' in retLog, msg='key severity: must be in ouput structure')
+		self.assertTrue('priority' in retLog, msg='key priority: must be in ouput structure')
+		self.assertTrue('use' in retLog, msg='key use: must be in ouput structure')
 
-		self.assertTrue(isinstance(retLog['priority'], int))
-		self.assertTrue(retLog['use'])
+		self.assertTrue(isinstance(retLog['priority'], int), msg='key priority: must be integer')
+		self.assertTrue(isinstance(retLog['use'], int), msg='key use: must be integer')
 
 
 	def __config(self):
@@ -81,6 +82,7 @@ class TestStringMethods(unittest.TestCase):
 			'env': '',
 			'flush': True,
 			'mask': 'ALL',
+			'name': 'logname',
 			'maxLen': MAX_LEN,
 			'strip': True,
 			'stackOffset': 0,
