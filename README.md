@@ -24,9 +24,6 @@ $ python test/example/basic_example.py
 
 Install with PIP (Python Package Installer)
 ```
-$ pip install logni
-$ python2.7 /usr/local/lib/python2.7/dist-packages/logni/logni.py
-
 $ pip3 install logni
 $ python3 /usr/local/lib/python3.5/dist-packages/logni/logni.py 
 ```
@@ -34,7 +31,7 @@ $ python3 /usr/local/lib/python3.5/dist-packages/logni/logni.py
 ## Example
 
 ```
-$ python
+$ python3
 
 >>> import logni
 >>> log = logni.Logni()

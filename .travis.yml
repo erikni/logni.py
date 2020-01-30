@@ -1,6 +1,5 @@
 language: python
 python:
-  - "2.7"
   - "3.4"
   - "3.5"
   - "3.6"      # current default Python on Travis CI
@@ -18,9 +17,8 @@ branches:
   - develop
 
 install:
-  - sudo sudo apt-get install -y pylint
-  - sudo pip install -U pytest
-  - sudo pip install codecov
+  - sudo sudo apt-get install -y pylint3 python3-pip python3-pytest python3
+  - sudo pip3 install codecov
 
 before_script:
   - export PYTHONPATH=$PYTHONPATH:$PWD
@@ -28,25 +26,25 @@ before_script:
 # command to run tests
 script:
   - echo "pylint --errors-only logni/*.py ... "
-  - pylint --errors-only logni/*.py
+  - pylint3 --errors-only logni/*.py
 
   - echo "pytest ... "
-  - pytest
+  - pytest-3
  
   - echo "example for utils ... "
-  - python logni/utilni.py
+  - python3 logni/utilni.py
 
-  - echo "example for filestream ... "
-  - python logni/filestream.py
+#  - echo "example for filestream ... "
+#  - python3 logni/filestream.py
 
   - echo "example for consolestream ... "
-  - python logni/consolestream.py
+  - python3 logni/consolestream.py
 
-  - echo "run logni.py ... "
-  - python logni/logni.py
+#  - echo "run logni.py ... "
+#  - python3 logni/logni.py
 
   - echo "run examples ... "
-  - python test/example/basic_example.py
+  - python3 test/example/basic_example.py
 
   - echo "codecov ... "
   - codecov --token=05aaf35c-89cb-419f-9012-e534e1248e3f
