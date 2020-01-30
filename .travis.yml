@@ -28,8 +28,8 @@ script:
   - echo "pylint --errors-only logni/*.py ... "
   - pylint3 --errors-only logni/*.py
 
-  - echo "pytest ... "
-  - pytest-3
+#  - echo "pytest ... "
+#  - pytest-3
  
   - echo "example for utils ... "
   - python3 logni/utilni.py
