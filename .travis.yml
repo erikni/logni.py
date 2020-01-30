@@ -23,27 +23,27 @@ install:
   - sudo pip install codecov
 
 before_script:
-  - export PYTHONPATH=$PYTHONPATH:$PWD/src
+  - export PYTHONPATH=$PYTHONPATH:$PWD
 
 # command to run tests
 script:
-  - echo "pylint --errors-only src/*.py ... "
-  - pylint --errors-only src/*.py
+  - echo "pylint --errors-only logni/*.py ... "
+  - pylint --errors-only logni/*.py
 
   - echo "pytest ... "
   - pytest
  
   - echo "example for utils ... "
-  - python src/utilni.py
+  - python logni/utilni.py
 
   - echo "example for filestream ... "
-  - python src/filestream.py
+  - python logni/filestream.py
 
   - echo "example for consolestream ... "
-  - python src/consolestream.py
+  - python logni/consolestream.py
 
   - echo "run logni.py ... "
-  - python src/logni.py
+  - python logni/logni.py
 
   - echo "run examples ... "
   - python test/example/basic_example.py

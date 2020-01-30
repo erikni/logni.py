@@ -4,23 +4,18 @@
 Basic example
 """
 
-import sys
 import time
-
-sys.path.append('../../src')
-sys.path.append('src')
-
 import logni
 
-
-LOG = logni.Logni({'mask':'I3E1C1W2', 'debugMode':True, 'name':'logname'})
+FILENAME = '/tmp/basic-%s.log' % time.time()
+LOG = logni.Logni({'mask':'I3E1C1W2', 'debugMode':True, 'name':'logname', 'logFile':FILENAME})
 
 
 # console
 LOG.console(True)
 
 # alias method for log.ni()
-print("# logni.critical('critical message')")
+print('# logni.critical(\'critical message\')')
 LOG.critical('critical message', ())
 print('---')
 

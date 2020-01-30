@@ -46,14 +46,14 @@ jobs:
           command: |
             . venv/bin/activate
             pip install pylint
-            pylint --errors-only src/*.py
+            pylint --errors-only logni/*.py
 
       # run scripts
       - run:
           name: run scripts
           command: |
             . venv/bin/activate
-            python src/logni.py
+            python logni/logni.py
 
       # run examples
       - run:

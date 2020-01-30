@@ -5,7 +5,11 @@
 File Stream
 """
 
-import utilni
+import logni
+
+
+__all__ = ['FileStream']
+
 
 class FileStream(object):
 	""" file stream """
@@ -17,7 +21,7 @@ class FileStream(object):
 		"""
 
 		self.__fd = None
-		self.__util = utilni.Util(config)
+		self.__util = logni.Util(config)
 		self.__config = config
 		self.file(config.get('logFile'))
 
@@ -30,11 +34,11 @@ class FileStream(object):
 		@return exitcode
 		"""
 
-		self.__util.debug('file=%s', logFile)
-
 		if not logFile:
 			self.__util.debug('file: logFile not input')
 			return 0
+
+		self.__util.debug('file=%s', logFile)
 
 		# err: read file
 		try:

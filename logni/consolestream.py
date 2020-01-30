@@ -7,6 +7,10 @@ Console Stream
 
 import sys
 
+
+__all__ = ['ConsoleStream']
+
+
 class ConsoleStream(object):
 	""" Console Stream """
 

@@ -34,16 +34,14 @@ import traceback
 import os
 import os.path
 import functools
-import utilni
-import filestream
-import consolestream
+import logni
 
 MAX_LEN = 10000
 CHARSET = 'utf8'
 TIME_FORMAT = '%Y/%m/%d %H:%M:%S'
 
 class Logni(object):
-	""" logni object """
+	""" Logni object """
 
 	# global
 	__config = {\
@@ -58,8 +56,8 @@ class Logni(object):
 		'mask': 'ALL',
 		'maxLen': MAX_LEN,
 		'strip': True,
-		'stackOffset': 0,
-		'stackDepth': 1,
+		'stackOffset': 1,
+		'stackDepth': 2,
 		'timeFormat': TIME_FORMAT,
 		'revision': ''}
 
@@ -76,9 +74,9 @@ class Logni(object):
 			self.__config[cfgName] = config[cfgName]
 
 		self.__name = self.__config.get('name', 'LOG').upper()
-		self.__util = utilni.Util(self.__config)
-		self.__file = filestream.FileStream(self.__config)
-		self.__console = consolestream.ConsoleStream(self.__config)
+		self.__util = logni.Util(self.__config)
+		self.__file = logni.FileStream(self.__config)
+		self.__console = logni.ConsoleStream(self.__config)
 
 		# severity
 		self.__logniMaskSeverity = {}
@@ -98,18 +96,19 @@ class Logni(object):
 
 
 	def file(self, logFile):
-		""" File
+		""" File output
 
 		@param logFile
 
 		@return exitcode """
 
 		self.__config['logFile'] = logFile
+
 		return self.__file.file(logFile)
 
 
 	def console(self, console=False):
-		""" Console (stderr)
+		""" Console (stderr) output
 
 		@param console
 
@@ -117,6 +116,7 @@ class Logni(object):
 
 		self.__config['console'] = console
 		self.__util.debug('console=%s', console)
+
 		return self.__console.console(console)
 
 	stderr = console
@@ -197,31 +197,31 @@ class Logni(object):
 
 		@return exitcode """
 
-		self.__util.debug('log.__logUse: severity=%s, priority=%s', (severity, priority))
+		self.__util.debug('__logUse: severity=%s, priority=%s', (severity, priority))
 
 		priority = self.__util.setPriority(priority)
 
 		# if mask=ALL
 		if self.__config['mask'] == 'ALL':
-			self.__util.debug('log.__logUse: severity=%s, msg priority=%s ' + \
+			self.__util.debug('__logUse: severity=%s, msg priority=%s ' + \
 				'>= mask=ALL -> msg log is VISIBLE',\
 				(severity, priority))
 			return 0
 
 		if severity[0] not in self.__logniMaskSeverity:
-			self.__util.debug('log.__logUse: severity=%s not exist', severity)
+			self.__util.debug('__logUse: severity=%s not exist', severity)
 			return 1
 
 		# message hidden
 		_priority = self.__logniMaskSeverity[severity[0]]
 		if priority < _priority:
-			self.__util.debug('log.__logUse: severity=%s, msg priority=%s < ' + \
+			self.__util.debug('__logUse: severity=%s, msg priority=%s < ' + \
 				'mask priority=%s -> msg log is HIDDEN',\
 				(severity, priority, _priority))
 			return 1
 
 		# message visible
-		self.__util.debug('log.__logUse: severity=%s, msg priority=%s >= ' + \
+		self.__util.debug('__logUse: severity=%s, msg priority=%s >= ' + \
 			'mask priority=%s -> msg log is VISIBLE',\
 			(severity, priority, _priority))
 
@@ -398,5 +398,5 @@ class Logni(object):
 
 		return logWrapperTimer
 
-
+log = Logni()
 # run: python test/example/example.py
