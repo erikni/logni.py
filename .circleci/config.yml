@@ -12,6 +12,9 @@ jobs:
 
     working_directory: ~/repo
 
+    environment:
+      PYTHONPATH: $PYTHONPATH:/usr/lib/python3/dist-packages/:/usr/local/lib/python3/dist-packages:$PWD
+
     steps:
       - checkout
 
@@ -47,6 +50,11 @@ jobs:
             . venv/bin/activate
             pip install pylint
             pylint --errors-only logni/*.py
+
+      # set PYTHONPATH
+      - run:
+          name: set PYTHONPATH
+          command: export PYTHONPATH=$PYTHONPATH:/usr/lib/python3/dist-packages/:/usr/local/lib/python3/dist-packages:$PWD
 
 #      # run scripts
 #      - run:

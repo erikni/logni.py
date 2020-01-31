@@ -16,7 +16,7 @@ jobs:
         python: [ '3.5', '3.6', '3.7', '3.8' ]
 
     env:
-      PYTHONPATH: $PYTHONPATH:/usr/lib/python3/dist-packages/:/usr/local/lib/python3/dist-packages:$PWD:logni/
+      PYTHONPATH: $PYTHONPATH:/usr/lib/python3/dist-packages/:/usr/local/lib/python3/dist-packages:$PWD
 
     steps:
     - uses: actions/checkout@v1
@@ -34,7 +34,7 @@ jobs:
 #        pip3 install -r requirements.txt
 
     - name: PYTHONPATH
-      run: export PYTHONPATH=$PYTHONPATH:$PWD
+      run: export PYTHONPATH=$PYTHONPATH:/usr/lib/python3/dist-packages/:/usr/local/lib/python3/dist-packages:$PWD
 
     - name: Code analysis with Pylint
       run: pylint3 logni/*.py
@@ -42,7 +42,7 @@ jobs:
     - name: Tests with pytest
       run: |
         sudo apt-get install python3-pytest
-#        pytest-3
+        pytest-3
 
 #    - name: Run script
 #      run: python -c "import sys; sys.path.append('./'); import logni; log.info('aaa')"
