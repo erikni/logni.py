@@ -1,5 +1,5 @@
 [FORMAT]
 indent-string=\t
 
-[MASTER]
-init-hook='import sys; sys.path.append("logni/")'
+#[MASTER]
+#init-hook='import sys; sys.path.append("logni/")'
