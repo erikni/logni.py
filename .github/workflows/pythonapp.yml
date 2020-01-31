@@ -44,8 +44,11 @@ jobs:
         sudo apt-get install python3-pytest
 #        pytest-3
 
-    - name: Run script
+    - name: import logni
       run: python3 -c "import logni; print(dir(logni))"
+
+    - name: from logni import log
+      run: python3 -c "from logni import log; log.info('aaa')"
 
 #    - name: Run example
 #      run: python3 test/example/basic_example.py
