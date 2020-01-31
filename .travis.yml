@@ -40,11 +40,17 @@ script:
   - echo "example for consolestream ... "
   - python3 logni/consolestream.py
 
-#  - echo "run logni.py ... "
-#  - python3 logni/logni.py
+  - echo "run logni ... "
+  - python3 -c "import logni; print(dir(logni))"
 
-  - echo "run examples ... "
+  - echo "run log.info() ... "
+  - python3 -c "from logni import log; log.info('aaa')"
+
+  - echo "run basic example ... "
   - python3 test/example/basic_example.py
+
+  - echo "run timer example ... "
+  - python3 test/example/timer_example.py
 
   - echo "codecov ... "
   - codecov --token=05aaf35c-89cb-419f-9012-e534e1248e3f

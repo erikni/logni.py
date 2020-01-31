@@ -6,6 +6,7 @@ Basic example
 
 import time
 import logni
+from logni import log
 
 FILENAME = '/tmp/basic-%s.log' % time.time()
 LOG = logni.Logni({'mask':'I3E1C1W2', 'debugMode':True, 'name':'logname', 'logFile':FILENAME})
@@ -36,3 +37,12 @@ LOG.debug('debug message #%s', time.time(), priority=1)
 print('---')
 
 LOG.info('info message without params', priority=4)
+
+# ---
+
+print('dir:')
+print(dir(log))
+print()
+
+print('info:')
+log.info('info test')
