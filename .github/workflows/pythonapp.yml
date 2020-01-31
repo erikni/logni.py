@@ -47,5 +47,5 @@ jobs:
 #    - name: Run script
 #      run: python -c "import sys; sys.path.append('./'); import logni; log.info('aaa')"
 
-    - name: Run example
-      run: python3 test/example/basic_example.py
+#    - name: Run example
+#      run: python3 test/example/basic_example.py
