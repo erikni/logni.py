@@ -49,7 +49,7 @@ class Logni(object):
 		'charset': CHARSET,
 		'color': False,
 		'console': True,
-		'logFile': None,
+		'log_file': None,
 		'env': '',
 		'flush': True,
 		'name': 'LOG',
@@ -70,8 +70,8 @@ class Logni(object):
 		if not config:
 			config = {}
 
-		for cfgName in config:
-			self.__config[cfgName] = config[cfgName]
+		for cfg_name in config:
+			self.__config[cfg_name] = config[cfg_name]
 
 		self.__name = self.__config.get('name', 'LOG').upper()
 		self.__util = logni.Util(self.__config)
@@ -79,32 +79,32 @@ class Logni(object):
 		self.__console = logni.ConsoleStream(self.__config)
 
 		# severity
-		self.__logniMaskSeverity = {}
-		self.__logniMaskSeverityFull = ['DEBUG', 'INFO', 'WARN', 'ERROR', 'CRITICAL']
+		self.__logni_mask_severity = {}
+		self.__logni_mask_severity_full = ['DEBUG', 'INFO', 'WARN', 'ERROR', 'CRITICAL']
 
 		# severity (shortname)
-		self.__logniMaskSeverityShort = []
-		for severityName in self.__logniMaskSeverityFull:
-			_short = severityName[:1]
+		self.__logni_mask_severity_short = []
+		for severity_name in self.__logni_mask_severity_full:
+			_short = severity_name[:1]
 
-			self.__logniMaskSeverityShort.append(_short)
-			self.__logniMaskSeverity[_short] = self.__util.setPriority(5)
+			self.__logni_mask_severity_short.append(_short)
+			self.__logni_mask_severity[_short] = self.__util.set_priority(5)
 
 		# default
 		self.mask(self.__config.get('mask', 'ALL'))
 		self.console(self.__config.get('console', True))
 
 
-	def file(self, logFile):
+	def file(self, log_file):
 		""" File output
 
-		@param logFile
+		@param log_file
 
 		@return exitcode """
 
-		self.__config['logFile'] = logFile
+		self.__config['log_file'] = log_file
 
-		return self.__file.file(logFile)
+		return self.__file.file(log_file)
 
 
 	def console(self, console=False):
@@ -122,23 +122,25 @@ class Logni(object):
 	stderr = console
 
 
-	def __setMask(self, mask='ALL'):
+	def __set_mask(self, mask='ALL'):
 		""" Set ALL | OFF / NOTSET mask
 
 		@param mask
 
 		@return exitcode """
 
-		maskPriority = {'ALL': 1, 'OFF': 5, 'NOTSET': 5}
-		priority = maskPriority.get(mask)
+		mask_priority = {'ALL': 1, 'OFF': 5, 'NOTSET': 5}
+		priority = mask_priority.get(mask)
 		if not priority:
 			return 1
 
-		for severityShort in self.__logniMaskSeverityShort:
-			self.__logniMaskSeverity[severityShort] = self.__util.setPriority(priority)
+		for severity_short in self.__logni_mask_severity_short:
+			self.__logni_mask_severity[severity_short] = self.__util.set_priority(priority)
 
-		self.__util.debug('__setMask: self.__logniMaskSeverityShort=%s', self.__logniMaskSeverityShort)
-		self.__util.debug('__setMask: self.__logniMaskSeverity=%s', self.__logniMaskSeverity)
+		self.__util.debug('__set_mask: self.__logni_mask_severity_short=%s',\
+			self.__logni_mask_severity_short)
+		self.__util.debug('__set_mask: self.__logni_mask_severity=%s',\
+			self.__logni_mask_severity)
 
 		return 0
 
@@ -159,37 +161,37 @@ class Logni(object):
 
 
 		# log mask = ALL | OFF
-		if self.__setMask(mask) == 0:
+		if self.__set_mask(mask) == 0:
 			return 0
 
 		# len is wrong
-		lenMask = len(mask)
-		if lenMask not in (2, 4, 6, 8, 10):
-			self.__util.debug('mask=%s: error len=%s', (mask, lenMask))
+		len_mask = len(mask)
+		if len_mask not in (2, 4, 6, 8, 10):
+			self.__util.debug('mask=%s: error len=%s', (mask, len_mask))
 			return 1
 
 		# set default MASK=0FF
-		self.__setMask('OFF')
+		self.__set_mask('OFF')
 
 		# set severity
-		for no in range(0, lenMask, 2):
+		for pos_no in range(0, len_mask, 2):
 
-			_len = mask[no]
-			_priority = self.__util.setPriority(mask[no+1])
+			_len = mask[pos_no]
+			_priority = self.__util.set_priority(mask[pos_no+1])
 
-			self.__logniMaskSeverity[_len] = _priority
+			self.__logni_mask_severity[_len] = _priority
 			self.__util.debug('mask: len=%s, priority=%s', (_len, _priority))
 
 			del _len, _priority
 
-		self.__util.debug('mask: self.__logniMaskSeverity=%s', self.__logniMaskSeverity)
+		self.__util.debug('mask: self.__logni_mask_severity=%s', self.__logni_mask_severity)
 		self.__config['mask'] = mask
 
 		return 0
 
 
 	# log use?
-	def __logUse(self, severity='', priority=1):
+	def __log_use(self, severity='', priority=1):
 		""" Use log?
 
 		@param severity
@@ -197,31 +199,31 @@ class Logni(object):
 
 		@return exitcode """
 
-		self.__util.debug('__logUse: severity=%s, priority=%s', (severity, priority))
+		self.__util.debug('__log_use: severity=%s, priority=%s', (severity, priority))
 
-		priority = self.__util.setPriority(priority)
+		priority = self.__util.set_priority(priority)
 
 		# if mask=ALL
 		if self.__config['mask'] == 'ALL':
-			self.__util.debug('__logUse: severity=%s, msg priority=%s ' + \
+			self.__util.debug('__log_use: severity=%s, msg priority=%s ' + \
 				'>= mask=ALL -> msg log is VISIBLE',\
 				(severity, priority))
 			return 0
 
-		if severity[0] not in self.__logniMaskSeverity:
-			self.__util.debug('__logUse: severity=%s not exist', severity)
+		if severity[0] not in self.__logni_mask_severity:
+			self.__util.debug('__log_use: severity=%s not exist', severity)
 			return 1
 
 		# message hidden
-		_priority = self.__logniMaskSeverity[severity[0]]
+		_priority = self.__logni_mask_severity[severity[0]]
 		if priority < _priority:
-			self.__util.debug('__logUse: severity=%s, msg priority=%s < ' + \
+			self.__util.debug('__log_use: severity=%s, msg priority=%s < ' + \
 				'mask priority=%s -> msg log is HIDDEN',\
 				(severity, priority, _priority))
 			return 1
 
 		# message visible
-		self.__util.debug('__logUse: severity=%s, msg priority=%s >= ' + \
+		self.__util.debug('__log_use: severity=%s, msg priority=%s >= ' + \
 			'mask priority=%s -> msg log is VISIBLE',\
 			(severity, priority, _priority))
 
@@ -239,10 +241,10 @@ class Logni(object):
 		@return struct """
 
 		# priority
-		priority = self.__util.setPriority(priority)
+		priority = self.__util.set_priority(priority)
 
 		# log use?
-		if self.__logUse(severity, priority) == 1:
+		if self.__log_use(severity, priority) == 1:
 			return {'msg':msg, 'severity':severity, 'priority':priority, 'use':False}
 
 		try:
@@ -259,28 +261,28 @@ class Logni(object):
 			msg = msg.replace('\n', ' ').strip()
 
 		# max len
-		msg = self.__util.logMaxLen(msg)
+		msg = self.__util.log_max_len(msg)
 
 		# stack
-		stackList = []
+		stack_list = []
 		offset = self.__config['stackOffset'] + 1
 		limit = self.__config['stackDepth'] + offset
 		for tes in traceback.extract_stack(limit=limit)[:-offset]:
-			stackList.append('%s:%s():%s' % (tes[0].split('/')[-1], tes[2], tes[1]))
+			stack_list.append('%s:%s():%s' % (tes[0].split('/')[-1], tes[2], tes[1]))
 
 		# log message
 		xrand = '%x' % random.SystemRandom().randint(1, 4294967295)
-		logMessage = "%s [%s] %s %s: %s [%s] {%s}" % \
+		log_message = "%s [%s] %s %s: %s [%s] {%s}" % \
 			(time.strftime(self.__config['timeFormat'], time.localtime()),\
 			os.getpid(),\
 			self.__name,\
 			'%s%s' % (severity[0], priority),\
 			msg, xrand,\
-			','.join(stackList))
+			','.join(stack_list))
 
 		# log to file / console
-		self.__file.log(logMessage)
-		self.__console.log(logMessage)
+		self.__file.log(log_message)
+		self.__console.log(log_message)
 
 		return {'msg':msg, 'severity':severity, 'priority':priority, 'use':True, 'hash':xrand}
 
@@ -385,18 +387,18 @@ class Logni(object):
 		""" Timer: print the runtime of the decorated function """
 
 		@functools.wraps(func)
-		def logWrapperTimer(*args, **kwargs):
+		def log_wrapper_timer(*args, **kwargs):
 			""" log wrapper timer """
 
-			startTime = time.time()
+			start_time = time.time()
 			ret = func(*args, **kwargs)
-			runTime = int((time.time() - startTime) * 1000)
+			run_time = int((time.time() - start_time) * 1000)
 
-			self.info('func %s() in %sms', (func.__name__, runTime), priority=1)
+			self.info('func %s() in %sms', (func.__name__, run_time), priority=1)
 
 			return ret
 
-		return logWrapperTimer
+		return log_wrapper_timer
 
 log = Logni()
 # run: python test/example/example.py

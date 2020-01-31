@@ -48,12 +48,12 @@ jobs:
             pip install pylint
             pylint --errors-only logni/*.py
 
-      # run scripts
-      - run:
-          name: run scripts
-          command: |
-            . venv/bin/activate
-            python logni/logni.py
+#      # run scripts
+#      - run:
+#          name: run scripts
+#          command: |
+#            . venv/bin/activate
+#            python logni/logni.py
 
       # run examples
       - run:
@@ -89,10 +89,10 @@ jobs:
     docker:
       - image: circleci/python:3.4-jessie
 
-  test-2.7:
-    <<: *full-test-template
-    docker:
-      - image: circleci/python:2.7-jessie
+#  test-2.7:
+#    <<: *full-test-template
+#    docker:
+#      - image: circleci/python:2.7-jessie
 
 
 workflows:

@@ -23,37 +23,37 @@ class FileStream(object):
 		self.__fd = None
 		self.__util = logni.Util(config)
 		self.__config = config
-		self.file(config.get('logFile'))
+		self.file(config.get('log_file'))
 
 
-	def file(self, logFile):
+	def file(self, log_file):
 		""" File
 
-		@param logFile
+		@param log_file
 
 		@return exitcode
 		"""
 
-		if not logFile:
-			self.__util.debug('file: logFile not input')
+		if not log_file:
+			self.__util.debug('file: log_file not input')
 			return 0
 
-		self.__util.debug('file=%s', logFile)
+		self.__util.debug('file=%s', log_file)
 
 		# err: read file
 		try:
-			self.__fd = open(logFile, 'a')
+			self.__fd = open(log_file, 'a')
 		except BaseException as emsg:
-			self.__util.debug('file="%s": err="%s"', (logFile, emsg))
+			self.__util.debug('file="%s": err="%s"', (log_file, emsg))
 			return 1
 
 		return 0
 
 
-	def log(self, logMessage):
+	def log(self, log_message):
 		""" Log to file
 
-		@param logMessage
+		@param log_message
 
 		@return exitcode
 		"""
@@ -62,7 +62,7 @@ class FileStream(object):
 		if not self.__fd:
 			return 0
 
-		self.__fd.write('%s\n' % logMessage)
+		self.__fd.write('%s\n' % log_message)
 
 		if self.__config['flush']:
 			self.__fd.flush()
@@ -74,7 +74,7 @@ if __name__ == '__main__':
 
 	TIME_FORMAT = '%Y/%m/%d %H:%M:%S'
 
-	F = FileStream({'logFile': '/tmp/file.log',\
+	F = FileStream({'log_file': '/tmp/file.log',\
 		'flush':True,\
 		'debugMode':True,\
 		'timeFormat':TIME_FORMAT})

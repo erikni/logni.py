@@ -13,8 +13,10 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python: [ '2.x', '3.x', 'pypy3' ]
+        python: [ '3.5', '3.6', '3.7', '3.8' ]
 
+    env:
+      PYTHONPATH: $PYTHONPATH:/usr/lib/python3/dist-packages/:/usr/local/lib/python3/dist-packages:$PWD:logni/
 
     steps:
     - uses: actions/checkout@v1
@@ -23,29 +25,27 @@ jobs:
       with:
         python-version: ${{ matrix.python }}
 
-    - name: Install dependencies
+    - name: Install dependencies [system]
       run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
+        sudo apt-get install python3 python3-pip pylint3 -y
+
+    - name: Install dependencies [python]
+      run: |
+        pip3 install -r requirements.txt
 
     - name: PYTHONPATH
       run: export PYTHONPATH=$PYTHONPATH:$PWD
 
-    - name: Lint with flake8
-      run: |
-        pip install flake8
-        # stop the build if there are Python syntax errors or undefined names
-        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-        # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+    - name: Code analysis with Pylint
+      run: pylint3 logni/*.py
 
-    - name: Test with pytest
+    - name: Tests with pytest
       run: |
-        pip install pytest
-        pytest
+        sudo apt-get install python3-pytest
+        pytest-3
 
-    - name: Run script
-      run: python logni/logni.py
+#    - name: Run script
+#      run: python3 logni/logni.py
 
     - name: Run example
-      run: python test/example/basic_example.py
+      run: python3 test/example/basic_example.py

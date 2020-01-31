@@ -32,17 +32,17 @@ class ConsoleStream(object):
 		self.__config['console'] = console
 
 
-	def log(self, logMessage):
+	def log(self, log_message):
 		""" Log to console / stderr
 
-		@param logMessage
+		@param log_message
 		"""
 
 		# stderr / console
 		if not self.__config['console']:
 			return 0
 
-		sys.stderr.write('%s\n' % logMessage)
+		sys.stderr.write('%s\n' % log_message)
 
 		if self.__config['flush']:
 			sys.stderr.flush()

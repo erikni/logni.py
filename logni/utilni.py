@@ -26,7 +26,7 @@ class Util(object):
 		self.__name = config.get('name', '').upper()
 
 
-	def setPriority(self, priority=4):
+	def set_priority(self, priority=4):
 		""" Set priority
 
 		@param priority
@@ -34,7 +34,7 @@ class Util(object):
 		@return priority
 		"""
 
-		self.debug('__setPriority: priority=%s', (priority,))
+		self.debug('__set_priority: priority=%s', (priority,))
 
 		if not priority:
 			return 1
@@ -49,7 +49,7 @@ class Util(object):
 
 
 	# maxlen
-	def logMaxLen(self, msg):
+	def log_max_len(self, msg):
 		""" Max length
 
 		@param msg
@@ -58,13 +58,13 @@ class Util(object):
 		"""
 
 		# maxlen
-		msgLen = len(msg)
-		if msgLen < self.__config['maxLen']:
+		msg_len = len(msg)
+		if msg_len < self.__config['maxLen']:
 			return msg
 
 		msg = msg[:self.__config['maxLen']] + ' ...'
-		self.debug('log: msgLen=%s > global maxLen=%s -> because msg short',\
-			(msgLen, self.__config['maxLen']))
+		self.debug('log: msg_len=%s > global maxLen=%s -> because msg short',\
+			(msg_len, self.__config['maxLen']))
 
 		return msg
 
@@ -81,16 +81,16 @@ class Util(object):
 		if not self.__config['debugMode']:
 			return 1
 
-		tf = time.strftime(self.__config['timeFormat'], time.localtime())
+		time_format = time.strftime(self.__config['timeFormat'], time.localtime())
 		getpid = os.getpid()
-		msgVal = msg % params
+		msg_val = msg % params
 
 		if params:
-			msgVal = msg % params
-			sys.stderr.write('%s [%s] %s D0: %s\n' % (tf, getpid, self.__name, msgVal))
+			msg_val = msg % params
+			sys.stderr.write('%s [%s] %s D0: %s\n' % (time_format, getpid, self.__name, msg_val))
 			return 0
 
-		sys.stderr.write('%s [%s] %s D0: %s\n' % (tf, getpid, self.__name, msg))
+		sys.stderr.write('%s [%s] %s D0: %s\n' % (time_format, getpid, self.__name, msg))
 		return 0
 
 
@@ -101,9 +101,9 @@ if __name__ == '__main__':
 
 	U = Util({'maxLen':MAX_LEN, 'timeFormat':TIME_FORMAT, 'debugMode':True, 'name':'TEST'})
 
-	U.setPriority(0)
-	U.setPriority(1)
+	U.set_priority(0)
+	U.set_priority(1)
 
-	U.logMaxLen('message')
+	U.log_max_len('message')
 
 	U.debug('ccc\n')
