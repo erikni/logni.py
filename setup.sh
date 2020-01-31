@@ -75,6 +75,10 @@ echo -n "* git clone ... "
 git clone -q ${GIT_OWNER}/${GIT_REPO}.git
 echo "done."
 
+echo -n "* git checkout develop ... "
+cd ${GIT_REPO}; git checkout develop
+echo "done."
+
 echo -n "* create dir ... "
 sudo mkdir -p ${INST_DIR}/logni
 echo "done."
