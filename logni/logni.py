@@ -400,5 +400,4 @@ class Logni(object):
 
 		return log_wrapper_timer
 
-log = Logni()
 # run: python test/example/example.py
