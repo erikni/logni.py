@@ -42,7 +42,7 @@ jobs:
     - name: Tests with pytest
       run: |
         sudo apt-get install python3-pytest
-        pytest-3
+#        pytest-3
 
 #    - name: Run script
 #      run: python -c "import sys; sys.path.append('./'); import logni; log.info('aaa')"
