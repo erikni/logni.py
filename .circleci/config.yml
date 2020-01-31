@@ -55,12 +55,12 @@ jobs:
 #            . venv/bin/activate
 #            python logni/logni.py
 
-      # run examples
-      - run:
-          name: run examples
-          command: |
-            . venv/bin/activate
-            python test/example/basic_example.py
+#      # run examples
+#      - run:
+#          name: run examples
+#          command: |
+#            . venv/bin/activate
+#            python test/example/basic_example.py
 
       # run tests!
       - run:

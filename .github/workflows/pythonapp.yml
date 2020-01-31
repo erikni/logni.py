@@ -42,10 +42,10 @@ jobs:
     - name: Tests with pytest
       run: |
         sudo apt-get install python3-pytest
-        pytest-3
+#        pytest-3
 
 #    - name: Run script
-#      run: python3 logni/logni.py
+#      run: python -c "import sys; sys.path.append('./'); import logni; log.info('aaa')"
 
     - name: Run example
       run: python3 test/example/basic_example.py
