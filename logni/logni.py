@@ -70,9 +70,16 @@ class Logni(object):
 		if not config:
 			config = {}
 
+		# environment variable values
+		for env_name in ('mask', 'console', 'name', 'file'):
+			if os.environ.get('LOGNI_%s' % env_name.upper()):
+				config[env_name] = os.environ['LOGNI_%s' % env_name.upper()]
+
+		# config
 		for cfg_name in config:
 			self.__config[cfg_name] = config[cfg_name]
 
+		# init
 		self.__name = self.__config.get('name', 'LOG').upper()
 		self.__util = logni.Util(self.__config)
 		self.__file = logni.FileStream(self.__config)
