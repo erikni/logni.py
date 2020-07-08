@@ -128,6 +128,18 @@ class Logni(object):
 
 	stderr = console
 
+	def name(self, name):
+		""" Set name """
+
+		if not name:
+			return False
+
+		self.__config['name'] = name
+		self.__util.debug('name=%s', name)
+		self.__name = name.upper()
+
+		return True
+
 
 	def __set_mask(self, mask='ALL'):
 		""" Set ALL | OFF / NOTSET mask
