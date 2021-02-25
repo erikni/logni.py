@@ -16,7 +16,7 @@ jobs:
         python: [ '3.5', '3.6', '3.7', '3.8' ]
 
     env:
-      PYTHONPATH: $PYTHONPATH:/usr/lib/python3/dist-packages/:/usr/local/lib/python3/dist-packages:$PWD
+      PYTHONPATH: $PYTHONPATH:/usr/lib/python3/dist-packages/:/usr/local/lib/python3/dist-packages:$PWD:/home/runner/work/erikni/logni.py
 
     steps:
     - uses: actions/checkout@v1
@@ -34,7 +34,7 @@ jobs:
 #        pip3 install -r requirements.txt
 
     - name: PYTHONPATH
-      run: export PYTHONPATH=$PYTHONPATH:/usr/lib/python3/dist-packages/:/usr/local/lib/python3/dist-packages:$PWD
+      run: export PYTHONPATH=$PYTHONPATH:/usr/lib/python3/dist-packages/:/usr/local/lib/python3/dist-packages:$PWD:/home/runner/work/erikni/logni.py
 
     - name: Code analysis with Pylint
       run: pylint3 logni/*.py
