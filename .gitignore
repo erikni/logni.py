@@ -1,6 +1,7 @@
 # ignore python compile files
 *.pyc
 *.pyo
+*.swp
 
 # debian package
 *.deb
@@ -15,3 +16,5 @@ debian/python-module-stampdir*
 /logni.egg-info
 .pypirc
 /venv
+
+/test/unit/*.xml

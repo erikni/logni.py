@@ -5,6 +5,7 @@
 Util
 """
 
+# pylint: disable=cyclic-import
 import os
 import sys
 import time
@@ -13,7 +14,7 @@ import time
 __all__ = ['Util']
 
 
-class Util(object):
+class Util():
 	""" Util """
 
 	def __init__(self, config):

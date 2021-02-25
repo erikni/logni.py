@@ -11,7 +11,7 @@ import sys
 __all__ = ['ConsoleStream']
 
 
-class ConsoleStream(object):
+class ConsoleStream():
 	""" Console Stream """
 
 	def __init__(self, config):

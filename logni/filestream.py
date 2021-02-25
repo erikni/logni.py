@@ -11,7 +11,7 @@ import logni
 __all__ = ['FileStream']
 
 
-class FileStream(object):
+class FileStream():
 	""" file stream """
 
 	def __init__(self, config):

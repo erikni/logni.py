@@ -28,6 +28,8 @@
  log.warn('warning message with priority=1', priority=1)
 """
 
+# pylint: disable=fixme
+import sys
 import time
 import random
 import traceback
@@ -40,7 +42,7 @@ MAX_LEN = 10000
 CHARSET = 'utf8'
 TIME_FORMAT = '%Y/%m/%d %H:%M:%S'
 
-class Logni(object):
+class Logni():
 	""" Logni object """
 
 	# global
@@ -305,8 +307,25 @@ class Logni(object):
 
 		return {'msg':msg, 'severity':severity, 'priority':priority, 'use':True, 'hash':xrand}
 
-
 	# ---
+
+	def traceback(self, exc, priority=1):
+		""" Traceback exception """
+
+		exc_type, exc_value, exc_tb = sys.exc_info()
+
+		try:
+			exc_type = exc.__class__
+			exc_tb = exc.__traceback__
+			exc_value = exc
+		except BaseException as base_err:
+			del base_err
+
+		tbt = traceback.TracebackException(exc_type, exc_value, exc_tb)
+		msg = '\\n'.join(tbt.format())
+
+		return self.log('CRITICAL', msg, (), priority)
+
 
 	def critical(self, msg, params=(), priority=1):
 		""" Critical: critical / fatal message

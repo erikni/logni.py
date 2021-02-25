@@ -36,13 +36,16 @@ print("# logni.debug('debug message #%s', time.time(), priority=1)")
 LOG.debug('debug message #%s', time.time(), priority=1)
 print('---')
 
+print('$ logni.traceback()')
+try:
+	3/0
+except Exception as err:
+	LOG.traceback(err)
+print('---')
+
 LOG.info('info message without params', priority=4)
 
 # ---
-
-print('dir:')
-print(dir(log))
-print()
 
 print('info:')
 log.info('info test')
