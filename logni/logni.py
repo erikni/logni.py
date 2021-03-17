@@ -312,13 +312,12 @@ class Logni():
 	def traceback(self, exc, priority=1):
 		""" Traceback exception """
 
-		exc_type, exc_value, exc_tb = sys.exc_info()
-
 		try:
 			exc_type = exc.__class__
 			exc_tb = exc.__traceback__
 			exc_value = exc
 		except BaseException as base_err:
+			exc_type, exc_value, exc_tb = sys.exc_info()
 			del base_err
 
 		tbt = traceback.TracebackException(exc_type, exc_value, exc_tb)

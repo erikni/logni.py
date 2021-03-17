@@ -84,8 +84,7 @@ sudo mkdir -p ${INST_DIR}/logni
 echo "done."
 
 echo -n "${GIT_REPO}: * script install ... "
-find $TMP_DIR
-for pyfile in `find ${TMP_DIR}/logni | grep "\.py" | grep -v '__pycache__' | grep -v "\.pyc" | grep -v "pylintrc" | grep -v "test/"`; do 
+for pyfile in `find ${TMP_DIR}/logni | grep "\.py" | grep -v '__pycache__' | grep -v "\.pyc" | grep -v "pylintrc" | grep -v "test/"` | grep -v "\.pytest"; do 
 	sudo cp ${pyfile} ${INST_DIR}/logni/.; 
 done;
 echo "done."
