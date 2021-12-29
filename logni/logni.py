@@ -42,6 +42,11 @@ MAX_LEN = 10000
 CHARSET = 'utf8'
 TIME_FORMAT = '%Y/%m/%d %H:%M:%S'
 
+SEVERITY_DEBUG = 'DEBUG'
+SEVERITY_INFO = 'INFO'
+SEVERITY_WARN = 'WARN'
+SEVERITY_ERROR = 'ERROR'
+SEVERITY_CRITICAL = 'CRITICAL'
 
 class Logni():
 	""" Logni object """
@@ -90,7 +95,8 @@ class Logni():
 
 		# severity
 		self.__logni_mask_severity = {}
-		self.__logni_mask_severity_full = ['DEBUG', 'INFO', 'WARN', 'ERROR', 'CRITICAL']
+		self.__logni_mask_severity_full = [SEVERITY_DEBUG, SEVERITY_INFO, SEVERITY_WARN,\
+			SEVERITY_ERROR, SEVERITY_CRITICAL]
 
 		# severity (shortname)
 		self.__logni_mask_severity_short = []
@@ -253,7 +259,7 @@ class Logni():
 		return True
 
 
-	def log(self, severity='DEBUG', msg='', params=(), priority=1):
+	def log(self, severity=SEVERITY_DEBUG, msg='', params=(), priority=1):
 		""" Log message
 
 		@param msg
@@ -325,7 +331,7 @@ class Logni():
 		tbt = traceback.TracebackException(exc_type, exc_value, exc_tb)
 		msg = '\\n'.join(tbt.format())
 
-		return self.log('CRITICAL', msg, (), priority)
+		return self.log(SEVERITY_CRITICAL, msg, (), priority)
 
 
 	def critical(self, msg, params=(), priority=1):
@@ -337,7 +343,7 @@ class Logni():
 
 		@return struct """
 
-		return self.log('CRITICAL', msg, params, priority)
+		return self.log(SEVERITY_CRITICAL, msg, params, priority)
 
 	fatal = critical
 
@@ -365,7 +371,7 @@ class Logni():
 
 		@return struct """
 
-		return self.log('WARN', msg, params, priority)
+		return self.log(SEVERITY_WARN, msg, params, priority)
 
 	warning = warn
 
@@ -379,7 +385,7 @@ class Logni():
 
 		@return struct """
 
-		return self.log('INFO', msg, params, priority)
+		return self.log(SEVERITY_INFO, msg, params, priority)
 
 	informational = info
 
@@ -393,7 +399,7 @@ class Logni():
 
 		@return struct """
 
-		return self.log('DEBUG', msg, params, priority)
+		return self.log(SEVERITY_DEBUG, msg, params, priority)
 
 	dbg = debug
 
