@@ -10,22 +10,28 @@
 logni is a python library for event logging and application states
 
 ## How to install?
-- git (github)
-- pip (python packages)
+- git (github) #1
+- wget (github) #2
+- pip (python packages) #3
 
 
-Install from Github
+Install from Github #1
 ```
 $ git clone https://github.com/erikni/logni.py.git
 $ cd logni.py
-$ pip install -r requirements.txt
-$ python test/example/basic_example.py
+$ sudo pip3 install -r requirements.txt
+$ python3 test/example/basic_example.py
 ```
 
-Install with PIP (Python Package Installer)
+Install from Github #2
+```
+$ sudo wget -O - https://raw.githubusercontent.com/erikni/logni.py/master/setup.sh | bash
+```
+
+Install with PIP (Python Package Installer) #3
 ```
 $ pip3 install logni
-$ python3 /usr/local/lib/python3.5/dist-packages/logni/logni.py 
+$ python3 /usr/local/lib/python3/dist-packages/logni/logni.py
 ```
 
 ## Example
@@ -33,8 +39,7 @@ $ python3 /usr/local/lib/python3.5/dist-packages/logni/logni.py
 ```
 $ python3
 
->>> import logni
->>> log = logni.Logni()
+>>> from logni import log
 
 >>> log.mask('ALL')
 >>> log.console(1)
@@ -57,13 +62,12 @@ $ python3
 
 ## Support
 
-Logni support python 2.7 and python >= 3.4
+Logni support python >= 3.6
 
 ## Roadmap
 
 Current roadmap:
 
-* bug fixes
 * new integration (rollbar, logentries, sentry, ... )
 * performance improvement.
 
