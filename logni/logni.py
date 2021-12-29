@@ -29,7 +29,6 @@
 """
 
 # pylint: disable=cyclic-import
-# pylint: disable=fixme
 import sys
 import time
 import random
@@ -42,6 +41,7 @@ import logni
 MAX_LEN = 10000
 CHARSET = 'utf8'
 TIME_FORMAT = '%Y/%m/%d %H:%M:%S'
+
 
 class Logni():
 	""" Logni object """
@@ -131,6 +131,7 @@ class Logni():
 
 	stderr = console
 
+
 	def name(self, name):
 		""" Set name """
 
@@ -154,7 +155,7 @@ class Logni():
 		mask_priority = {'ALL': 1, 'OFF': 5, 'NOTSET': 5}
 		priority = mask_priority.get(mask)
 		if not priority:
-			return 1
+			return False
 
 		for severity_short in self.__logni_mask_severity_short:
 			self.__logni_mask_severity[severity_short] = self.__util.set_priority(priority)
@@ -164,7 +165,7 @@ class Logni():
 		self.__util.debug('__set_mask: self.__logni_mask_severity=%s',\
 			self.__logni_mask_severity)
 
-		return 0
+		return True
 
 
 	def mask(self, mask='ALL'):
@@ -183,14 +184,14 @@ class Logni():
 
 
 		# log mask = ALL | OFF
-		if self.__set_mask(mask) == 0:
-			return 0
+		if self.__set_mask(mask):
+			return True
 
 		# len is wrong
 		len_mask = len(mask)
 		if len_mask not in (2, 4, 6, 8, 10):
 			self.__util.debug('mask=%s: error len=%s', (mask, len_mask))
-			return 1
+			return False
 
 		# set default MASK=0FF
 		self.__set_mask('OFF')
@@ -209,7 +210,7 @@ class Logni():
 		self.__util.debug('mask: self.__logni_mask_severity=%s', self.__logni_mask_severity)
 		self.__config['mask'] = mask
 
-		return 0
+		return True
 
 
 	# log use?
@@ -230,11 +231,11 @@ class Logni():
 			self.__util.debug('__log_use: severity=%s, msg priority=%s ' + \
 				'>= mask=ALL -> msg log is VISIBLE',\
 				(severity, priority))
-			return 0
+			return True
 
 		if severity[0] not in self.__logni_mask_severity:
 			self.__util.debug('__log_use: severity=%s not exist', severity)
-			return 1
+			return False
 
 		# message hidden
 		_priority = self.__logni_mask_severity[severity[0]]
@@ -242,14 +243,14 @@ class Logni():
 			self.__util.debug('__log_use: severity=%s, msg priority=%s < ' + \
 				'mask priority=%s -> msg log is HIDDEN',\
 				(severity, priority, _priority))
-			return 1
+			return False
 
 		# message visible
 		self.__util.debug('__log_use: severity=%s, msg priority=%s >= ' + \
 			'mask priority=%s -> msg log is VISIBLE',\
 			(severity, priority, _priority))
 
-		return 0
+		return True
 
 
 	def log(self, severity='DEBUG', msg='', params=(), priority=1):
@@ -266,7 +267,7 @@ class Logni():
 		priority = self.__util.set_priority(priority)
 
 		# log use?
-		if self.__log_use(severity, priority) == 1:
+		if not self.__log_use(severity, priority):
 			return {'msg':msg, 'severity':severity, 'priority':priority, 'use':False}
 
 		try:
@@ -274,7 +275,7 @@ class Logni():
 		except BaseException as emsg:
 			msg = '!! %s %s <%s>' % (msg, params, emsg)
 
-		# todo: unicode test
+		# unicode test
 		# if isinstance(msg, types.UnicodeType):
 		# msg = msg.encode(self.__config['charset'], 'ignore')
 

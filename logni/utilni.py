@@ -79,7 +79,7 @@ class Util():
 		"""
 
 		if not self.__config['debugMode']:
-			return 1
+			return False
 
 		time_format = time.strftime(self.__config['timeFormat'], time.localtime())
 		getpid = os.getpid()
@@ -88,10 +88,10 @@ class Util():
 		if params:
 			msg_val = msg % params
 			sys.stderr.write('%s [%s] %s D0: %s\n' % (time_format, getpid, self.__name, msg_val))
-			return 0
+			return True
 
 		sys.stderr.write('%s [%s] %s D0: %s\n' % (time_format, getpid, self.__name, msg))
-		return 0
+		return True
 
 
 if __name__ == '__main__':

@@ -40,14 +40,14 @@ class ConsoleStream():
 
 		# stderr / console
 		if not self.__config['console']:
-			return 0
+			return True
 
 		sys.stderr.write('%s\n' % log_message)
 
 		if self.__config['flush']:
 			sys.stderr.flush()
 
-		return 0
+		return True
 
 
 if __name__ == '__main__':

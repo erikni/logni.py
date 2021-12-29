@@ -37,7 +37,7 @@ class FileStream():
 
 		if not log_file:
 			self.__util.debug('file: log_file not input')
-			return 0
+			return True
 
 		self.__util.debug('file=%s', log_file)
 
@@ -48,7 +48,7 @@ class FileStream():
 			self.__util.debug('file="%s": err="%s"', (log_file, emsg))
 			return 1
 
-		return 0
+		return True
 
 
 	def log(self, log_message):
@@ -61,14 +61,14 @@ class FileStream():
 
 		# file descriptor
 		if not self.__fd:
-			return 0
+			return True
 
 		self.__fd.write('%s\n' % log_message)
 
 		if self.__config['flush']:
 			self.__fd.flush()
 
-		return 0
+		return True
 
 
 if __name__ == '__main__':
