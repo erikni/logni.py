@@ -36,7 +36,7 @@ jobs:
     - name: Code analysis with Pylint
       run: |
         chmod 755 test/example/*.sh
-        ./test/exaple/pylint.sh
+        ./test/example/pylint.sh
 
     - name: import logni
       run: python3 -c "import logni; print(dir(logni))"
