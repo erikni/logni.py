@@ -28,6 +28,7 @@
  log.warn('warning message with priority=1', priority=1)
 """
 
+# pylint: disable=cyclic-import
 # pylint: disable=fixme
 import sys
 import time

@@ -5,6 +5,7 @@
 File Stream
 """
 
+# pylint: disable=cyclic-import
 import logni
 
 

@@ -5,7 +5,6 @@
 Util
 """
 
-# pylint: disable=cyclic-import
 import os
 import sys
 import time
