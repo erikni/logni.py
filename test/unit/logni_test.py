@@ -17,7 +17,7 @@ TIME_FORMAT = '%Y/%m/%d %H:%M:%S'
 class TestStringMethods(unittest.TestCase):
 	""" Unit test """
 
-	def __checkConfigStructure(self, config):
+	def __check_config_struct(self, config):
 		"""
 		Method tests basic structure for config
 		"""
@@ -48,24 +48,25 @@ class TestStringMethods(unittest.TestCase):
 		self.assertTrue(isinstance(config['stackDepth'], int), msg='stackDepth must be integer')
 
 
-	def __checkLogStructure(self, retLog):
+	def __check_log_struct(self, ret_log):
 		"""
 		Method tests basic structure for OK return call
 		"""
 
-		self.assertTrue('msg' in retLog, msg='key msg: must be in ouput structure')
-		self.assertTrue('severity' in retLog, msg='key severity: must be in ouput structure')
-		self.assertTrue('priority' in retLog, msg='key priority: must be in ouput structure')
-		self.assertTrue('use' in retLog, msg='key use: must be in ouput structure')
+		self.assertTrue('msg' in ret_log, msg='key msg: must be in ouput structure')
+		self.assertTrue('severity' in ret_log, msg='key severity: must be in ouput structure')
+		self.assertTrue('priority' in ret_log, msg='key priority: must be in ouput structure')
+		self.assertTrue('use' in ret_log, msg='key use: must be in ouput structure')
 
-		self.assertTrue(isinstance(retLog['priority'], int), msg='key priority: must be integer')
-		self.assertTrue(isinstance(retLog['use'], int), msg='key use: must be integer')
+		self.assertTrue(isinstance(ret_log['priority'], int), msg='key priority: must be integer')
+		self.assertTrue(isinstance(ret_log['use'], int), msg='key use: must be integer')
 
 
 	def __config(self):
-		""" 
-		Config 
 		"""
+		Config
+		"""
+		# pylint: disable=no-self-use
 
 		# config
 		config = {\
@@ -94,30 +95,67 @@ class TestStringMethods(unittest.TestCase):
 		"""
 
 		config = self.__config()
-		self.__checkConfigStructure(config)
+		self.__check_config_struct(config)
 
 		log = logni.Logni(config)
 
-		for priority_no in range(1,4):
+		return log
+
+
+	def test11_ok_info(self):
+		""" info OK """
+
+		log = self.test10_ok()
+		for priority_no in range(1, 4):
 			ret = log.info('info message', priority=priority_no)
-			self.__checkLogStructure(ret)
+			self.__check_log_struct(ret)
 
+		return ret
+
+	def test12_ok_warn(self):
+		""" warning OK """
+
+		log = self.test10_ok()
+		for priority_no in range(1, 4):
 			ret = log.warn('warn message', priority=priority_no)
-			self.__checkLogStructure(ret)
+			self.__check_log_struct(ret)
 
+		return ret
+
+	def test12_ok_error(self):
+		""" error OK """
+
+		log = self.test10_ok()
+		for priority_no in range(1, 4):
 			ret = log.error('error message', priority=priority_no)
-			self.__checkLogStructure(ret)
+			self.__check_log_struct(ret)
 
+		return ret
+
+	def test12_ok_critical(self):
+		""" critical OK """
+
+		log = self.test10_ok()
+		for priority_no in range(1, 4):
 			ret = log.critical('critical message', priority=priority_no)
-			self.__checkLogStructure(ret)
+			self.__check_log_struct(ret)
 
+		return ret
+
+	def test12_ok_debug(self):
+		""" debug OK """
+
+		log = self.test10_ok()
+		for priority_no in range(1, 4):
 			ret = log.debug('debug message', priority=priority_no)
-			self.__checkLogStructure(ret)
+			self.__check_log_struct(ret)
+
+		return ret
 
 
 	def test21_err_mask(self):
 		"""
-		No used mask 
+		No used mask
 		"""
 
 		# init
@@ -125,36 +163,38 @@ class TestStringMethods(unittest.TestCase):
 		config['mask'] = 'I4'
 		log = logni.Logni(config)
 
-		retInfo = log.info('info message', priority=1)
+		ret_info = log.info('info message', priority=1)
 
-		self.assertTrue('use' in retInfo)
-		self.assertFalse(retInfo['use'])
-		
+		self.assertTrue('use' in ret_info)
+		self.assertFalse(ret_info['use'])
+
 
 	def test22_err_method(self):
 		"""
 		Test tests incorrect method call raises Attribute error
 		"""
+		# pylint: disable=no-member
 
 		# init
 		config = self.__config()
 		log = logni.Logni(config)
 
 		with self.assertRaises(AttributeError):
-			log.nonExistMethod()
+			log.non_exist_method()
 
 
 	def test23_err_param(self):
 		"""
 		Test tests incorrect method call raises type error - non existent parameter
 		"""
+		# pylint: disable=unexpected-keyword-arg
 
 		# init
 		config = self.__config()
 		log = logni.Logni(config)
 
 		with self.assertRaises(TypeError):
-			log.info('info message', nonExistentParameter=2)
+			log.info('info message', non_exist_param=2)
 
 
 if __name__ == '__main__':

@@ -39,7 +39,7 @@ print('---')
 print('$ logni.traceback()')
 try:
 	3/0
-except Exception as err:
+except BaseException as err:
 	LOG.traceback(err)
 print('---')
 

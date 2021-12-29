@@ -10,4 +10,4 @@ if [ ! -f "$PYLINT_BIN" ]; then
 fi
 
 pylint3 --version
-pylint3 *.py logni/*.py
+pylint3 *.py logni/*.py test/example/*.py test/unit/*.py

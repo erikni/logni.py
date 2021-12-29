@@ -10,25 +10,25 @@ import logni
 LOG = logni.Logni({'mask':'ALL', 'debugMode':True})
 
 @LOG.timer
-def wasteSomeTime(no):
+def waste_some_time(xno):
 	""" waste some time """
 
-	for _ in range(no):
+	for _ in range(xno):
 		sum([i**2 for i in range(10000)])
 
 
 @LOG.timer
-def wasteSomeTime2(no, rangeNo):
+def waste_some_time2(xno, range_no):
 	""" waste some time """
 
-	for _ in range(no):
-		sum([i**2 for i in range(rangeNo)])
+	for _ in range(xno):
+		sum([i**2 for i in range(range_no)])
 
 
-wasteSomeTime(1)
-wasteSomeTime(999)
+waste_some_time(1)
+waste_some_time(999)
 
 print('---')
 
-wasteSomeTime2(1, 10)
-wasteSomeTime2(999, 1000)
+waste_some_time2(1, 10)
+waste_some_time2(999, 1000)
