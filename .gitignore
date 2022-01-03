@@ -1,3 +1,6 @@
+# build
+/build/
+
 # ignore python compile files
 *.pyc
 *.pyo
@@ -10,6 +13,7 @@
 *.debhelper.log
 debian/python-logni/*
 debian/python-module-stampdir*
+debian/.debhelper
 
 # pypi
 /dist/
