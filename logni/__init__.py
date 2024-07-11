@@ -4,12 +4,13 @@
 logni init
 """
 
-from .utilni import Util
-from .filestream import FileStream
-from .consolestream import ConsoleStream
-from .logni import Logni
+from logni.utilni import Util
+from logni.filestream import FileStream
+from logni.consolestream import ConsoleStream
+from logni.logni import Logni
+from logni.cfgni import Cfgni
 
 #pylint: disable=invalid-name
 log = Logni()
 
-__all__ = ['Util', 'FileStream', 'ConsoleStream', 'Logni', 'log']
+__all__ = ['Util', 'FileStream', 'ConsoleStream', 'Logni', 'log', 'Cfgni']

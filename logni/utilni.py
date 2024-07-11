@@ -26,7 +26,7 @@ class Util():
 		self.__name = config.get('name', '').upper()
 
 
-	def set_priority(self, priority=4):
+	def set_priority(self, priority:int=4) -> int:
 		""" Set priority
 
 		@param priority
@@ -49,7 +49,7 @@ class Util():
 
 
 	# maxlen
-	def log_max_len(self, msg):
+	def log_max_len(self, msg:str) -> str:
 		""" Max length
 
 		@param msg
@@ -69,7 +69,7 @@ class Util():
 		return msg
 
 
-	def debug(self, msg, params=()):
+	def debug(self, msg:str, params:tuple=()) -> bool:
 		""" Debug mode log
 
 		@param msg
@@ -87,10 +87,10 @@ class Util():
 
 		if params:
 			msg_val = msg % params
-			sys.stderr.write('%s [%s] %s D0: %s\n' % (time_format, getpid, self.__name, msg_val))
+			sys.stderr.write(f'{time_format} [{getpid}] {self.__name} D0: {msg_val}\n')
 			return True
 
-		sys.stderr.write('%s [%s] %s D0: %s\n' % (time_format, getpid, self.__name, msg))
+		sys.stderr.write(f'{time_format} [{getpid}] {self.__name} D0: {msg}\n')
 		return True
 
 

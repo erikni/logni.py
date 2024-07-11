@@ -39,14 +39,8 @@ import functools
 import logni
 
 MAX_LEN = 10000
-CHARSET = 'utf8'
+CHARSET = 'utf-8'
 TIME_FORMAT = '%Y/%m/%d %H:%M:%S'
-
-SEVERITY_DEBUG = 'DEBUG'
-SEVERITY_INFO = 'INFO'
-SEVERITY_WARN = 'WARN'
-SEVERITY_ERROR = 'ERROR'
-SEVERITY_CRITICAL = 'CRITICAL'
 
 class Logni():
 	""" Logni object """
@@ -75,13 +69,14 @@ class Logni():
 
 		@param config """
 
+		self.cfg = logni.Cfgni()
 		if not config:
 			config = {}
 
 		# environment variable values
 		for env_name in ('mask', 'console', 'name', 'file'):
-			if os.environ.get('LOGNI_%s' % env_name.upper()):
-				config[env_name] = os.environ['LOGNI_%s' % env_name.upper()]
+			if os.environ.get(f'LOGNI_{env_name.upper()}'):
+				config[env_name] = os.environ[f'LOGNI_{env_name.upper()}']
 
 		# config
 		for cfg_name in config:
@@ -95,8 +90,12 @@ class Logni():
 
 		# severity
 		self.__logni_mask_severity = {}
-		self.__logni_mask_severity_full = [SEVERITY_DEBUG, SEVERITY_INFO, SEVERITY_WARN,\
-			SEVERITY_ERROR, SEVERITY_CRITICAL]
+		self.__logni_mask_severity_full = [\
+			self.cfg.SEVERITY_DEBUG,\
+			self.cfg.SEVERITY_INFO,\
+			self.cfg.SEVERITY_WARN,\
+			self.cfg.SEVERITY_ERROR,\
+			self.cfg.SEVERITY_CRITICAL]
 
 		# severity (shortname)
 		self.__logni_mask_severity_short = []
@@ -111,7 +110,7 @@ class Logni():
 		self.console(self.__config.get('console', True))
 
 
-	def file(self, log_file):
+	def file(self, log_file:str):
 		""" File output
 
 		@param log_file
@@ -123,7 +122,7 @@ class Logni():
 		return self.__file.file(log_file)
 
 
-	def console(self, console=False):
+	def console(self, console:bool=False):
 		""" Console (stderr) output
 
 		@param console
@@ -138,7 +137,7 @@ class Logni():
 	stderr = console
 
 
-	def name(self, name):
+	def name(self, name:str):
 		""" Set name """
 
 		if not name:
@@ -174,7 +173,7 @@ class Logni():
 		return True
 
 
-	def mask(self, mask='ALL'):
+	def mask(self, mask:str='ALL'):
 		""" Set mask
 
 		@param mask
@@ -220,7 +219,7 @@ class Logni():
 
 
 	# log use?
-	def __log_use(self, severity='', priority=1):
+	def __log_use(self, severity:str, priority:int=1):
 		""" Use log?
 
 		@param severity
@@ -259,7 +258,27 @@ class Logni():
 		return True
 
 
-	def log(self, severity=SEVERITY_DEBUG, msg='', params=(), priority=1):
+	def __log_message(self, severity:str, msg:str, priority:int):
+		""" message """
+
+		# stack
+		stack_list = []
+		offset = self.__config['stackOffset'] + 1
+		limit = self.__config['stackDepth'] + offset
+		for tes in traceback.extract_stack(limit=limit)[:-offset]:
+			stack_list.append(f'{tes[0].split("/")[-1]}:{tes[2]}():{tes[1]}')
+		slist = ','.join(stack_list)
+
+		xrand = random.SystemRandom().randint(1, 4294967295)
+		time_format = time.strftime(self.__config['timeFormat'], time.localtime())
+		spriority = f'{severity[0]}{priority}'
+
+		log_message = f"{time_format} [{os.getpid()}] {self.__name} {spriority}: {msg} [{xrand}] {slist}"
+
+		return log_message, xrand
+
+
+	def log(self, severity:str, msg:str, params:tuple=(), priority:int=1):
 		""" Log message
 
 		@param msg
@@ -268,6 +287,7 @@ class Logni():
 		@param priority
 
 		@return struct """
+		# pylint: disable=broad-exception-caught
 
 		# priority
 		priority = self.__util.set_priority(priority)
@@ -278,8 +298,10 @@ class Logni():
 
 		try:
 			msg = msg % params
-		except BaseException as emsg:
-			msg = '!! %s %s <%s>' % (msg, params, emsg)
+		except TypeError as temsg:
+			msg = f'!! {msg} {params} <{temsg}>'
+		except BaseException as bemsg:
+			msg = f'!! {msg} {params} <{bemsg}>'
 
 		# unicode test
 		# if isinstance(msg, types.UnicodeType):
@@ -292,33 +314,20 @@ class Logni():
 		# max len
 		msg = self.__util.log_max_len(msg)
 
-		# stack
-		stack_list = []
-		offset = self.__config['stackOffset'] + 1
-		limit = self.__config['stackDepth'] + offset
-		for tes in traceback.extract_stack(limit=limit)[:-offset]:
-			stack_list.append('%s:%s():%s' % (tes[0].split('/')[-1], tes[2], tes[1]))
-
 		# log message
-		xrand = '%x' % random.SystemRandom().randint(1, 4294967295)
-		log_message = "%s [%s] %s %s: %s [%s] {%s}" % \
-			(time.strftime(self.__config['timeFormat'], time.localtime()),\
-			os.getpid(),\
-			self.__name,\
-			'%s%s' % (severity[0], priority),\
-			msg, xrand,\
-			','.join(stack_list))
+		log_message, xrand = self.__log_message(severity, msg, priority)
 
 		# log to file / console
 		self.__file.log(log_message)
-		self.__console.log(log_message)
+		self.__console.log(log_message, severity)
 
 		return {'msg':msg, 'severity':severity, 'priority':priority, 'use':True, 'hash':xrand}
 
 	# ---
 
-	def traceback(self, exc, priority=1):
+	def traceback(self, exc, priority:int=1):
 		""" Traceback exception """
+		# pylint: disable=broad-exception-caught
 
 		try:
 			exc_type = exc.__class__
@@ -331,10 +340,10 @@ class Logni():
 		tbt = traceback.TracebackException(exc_type, exc_value, exc_tb)
 		msg = '\\n'.join(tbt.format())
 
-		return self.log(SEVERITY_CRITICAL, msg, (), priority)
+		return self.log(self.cfg.SEVERITY_CRITICAL, msg, (), priority)
 
 
-	def critical(self, msg, params=(), priority=1):
+	def critical(self, msg:str, params:tuple=(), priority:int=1):
 		""" Critical: critical / fatal message
 
 		@param msg
@@ -343,12 +352,12 @@ class Logni():
 
 		@return struct """
 
-		return self.log(SEVERITY_CRITICAL, msg, params, priority)
+		return self.log(self.cfg.SEVERITY_CRITICAL, msg, params, priority)
 
 	fatal = critical
 
 
-	def error(self, msg, params=(), priority=1):
+	def error(self, msg:str, params:tuple=(), priority:int=1):
 		""" Error: error message
 
 		@param msg
@@ -357,12 +366,12 @@ class Logni():
 
 		@return struct """
 
-		return self.log('ERR', msg, params, priority)
+		return self.log(self.cfg.SEVERITY_ERROR, msg, params, priority)
 
 	err = error
 
 
-	def warn(self, msg, params=(), priority=1):
+	def warn(self, msg:str, params:tuple=(), priority:int=1):
 		""" Warn: warning message
 
 		@param msg
@@ -371,12 +380,12 @@ class Logni():
 
 		@return struct """
 
-		return self.log(SEVERITY_WARN, msg, params, priority)
+		return self.log(self.cfg.SEVERITY_WARN, msg, params, priority)
 
 	warning = warn
 
 
-	def info(self, msg, params=(), priority=1):
+	def info(self, msg:str, params:tuple=(), priority:int=1):
 		""" Info: informational messages
 
 		@param msg
@@ -385,12 +394,12 @@ class Logni():
 
 		@return struct """
 
-		return self.log(SEVERITY_INFO, msg, params, priority)
+		return self.log(self.cfg.SEVERITY_INFO, msg, params, priority)
 
 	informational = info
 
 
-	def debug(self, msg, params=(), priority=1):
+	def debug(self, msg:str, params:tuple=(), priority:int=1):
 		""" Debug: debug-level messages
 
 		@param msg
@@ -399,12 +408,12 @@ class Logni():
 
 		@return struct """
 
-		return self.log(SEVERITY_DEBUG, msg, params, priority)
+		return self.log(self.cfg.SEVERITY_DEBUG, msg, params, priority)
 
 	dbg = debug
 
 
-	def emergency(self, msg, params=()):
+	def emergency(self, msg:str, params:tuple=()):
 		""" Emergency: system is unusable
 
 		critical(msg, priority=4) """
@@ -412,7 +421,7 @@ class Logni():
 		return self.critical(msg, params, priority=4)
 
 
-	def alert(self, msg, params=()):
+	def alert(self, msg:str, params:tuple=()):
 		""" Alert: action must be taken immediately
 
 		error(msg, priority=3) """
@@ -420,7 +429,7 @@ class Logni():
 		return self.error(msg, params, priority=3)
 
 
-	def notice(self, msg, params=()):
+	def notice(self, msg:str, params:tuple=()):
 		""" Notice: normal but significant condition
 
 		info(msg, priority=1) """
@@ -445,4 +454,4 @@ class Logni():
 
 		return log_wrapper_timer
 
-# run: python test/example/example.py
+# run: python test/example/basic_example.py

@@ -10,10 +10,10 @@ from logni import log
 
 LOGNI_MASK = 'I3E1C1W2'
 LOGNI_CONSOLE = True
-LOGNI_FILENAME = '/tmp/basic-%s.log' % time.time()
+LOGNI_FILENAME = f'/tmp/basic-{time.time()}.log'
 LOGNI_DEBUG = True
 
-LOG = logni.Logni({'mask':LOGNI_MASK, 'debugMode':LOGNI_DEBUG, 'name':'logname',\
+LOG = logni.Logni({'mask':LOGNI_MASK, 'debugMode':LOGNI_DEBUG, 'name':'BASICTEST',\
 	'logFile':LOGNI_FILENAME})
 LOG.console(LOGNI_CONSOLE)
 LOG.mask(LOGNI_MASK)
@@ -48,8 +48,8 @@ print()
 print('$ logni.traceback()')
 try:
 	3/0
-except BaseException as err:
-	LOG.traceback(err)
+except ZeroDivisionError as zerr:
+	LOG.traceback(zerr)
 print('---')
 print()
 

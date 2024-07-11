@@ -27,13 +27,14 @@ class FileStream():
 		self.file(config.get('log_file'))
 
 
-	def file(self, log_file):
+	def file(self, log_file:str) -> bool:
 		""" File
 
 		@param log_file
 
 		@return exitcode
 		"""
+		# pylint: disable=consider-using-with
 
 		if not log_file:
 			self.__util.debug('file: log_file not input')
@@ -43,15 +44,15 @@ class FileStream():
 
 		# err: read file
 		try:
-			self.__fd = open(log_file, 'a')
-		except BaseException as emsg:
-			self.__util.debug('file="%s": err="%s"', (log_file, emsg))
-			return 1
+			self.__fd = open(log_file, 'a', encoding='utf-8')
+		except PermissionError as pemsg:
+			self.__util.debug('file="%s": err="%s"', (log_file, pemsg))
+			return False
 
 		return True
 
 
-	def log(self, log_message):
+	def log(self, log_message:str) -> bool:
 		""" Log to file
 
 		@param log_message
@@ -63,7 +64,7 @@ class FileStream():
 		if not self.__fd:
 			return True
 
-		self.__fd.write('%s\n' % log_message)
+		self.__fd.write(f'{log_message}\n')
 
 		if self.__config['flush']:
 			self.__fd.flush()

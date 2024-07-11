@@ -7,24 +7,24 @@ import sys
 import setuptools
 
 
-if sys.version_info < (3, 5):
-	sys.exit("Python 3.6 or newer is required for logni.py")
+if sys.version_info < (3, 6):
+	sys.exit("Python 3.7 or newer is required for logni.py")
 
 
 def readme():
 	""" readme """
 
-	return open('README.md', 'r').read()
+	return open('README.md', 'r', encoding='utf-8').read()
 
 
 def version():
 	""" version """
 
-	return open('version.properties', 'r').read()
+	return open('version.properties', 'r', encoding='utf-8').read()
 
 
 setuptools.setup(name='logni',\
-  version='0.1.2',\
+  version='0.2.2',\
   author='Erik Brozek',\
   author_email='erik@brozek.name',\
   description='python library for event logging and application states',\
@@ -35,12 +35,13 @@ setuptools.setup(name='logni',\
   packages=['logni'],\
   classifiers=['Development Status :: 4 - Beta',\
     'Programming Language :: Python :: 3',\
-    'Programming Language :: Python :: 3.6',\
     'Programming Language :: Python :: 3.7',\
     'Programming Language :: Python :: 3.8',\
     'Programming Language :: Python :: 3.9',\
+    'Programming Language :: Python :: 3.10',\
+    'Programming Language :: Python :: 3.11',\
     'License :: OSI Approved :: MIT License',\
     'Topic :: System :: Logging'],\
-  python_requires='>=3.6',\
+  python_requires='>=3.7',\
   keywords=['logging', 'logging-library', 'logger'],\
   license='MIT')

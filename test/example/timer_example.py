@@ -14,7 +14,7 @@ def waste_some_time(xno):
 	""" waste some time """
 
 	for _ in range(xno):
-		sum([i**2 for i in range(10000)])
+		sum(y**2 for y in list(range(10000)))
 
 
 @LOG.timer
@@ -22,7 +22,7 @@ def waste_some_time2(xno, range_no):
 	""" waste some time """
 
 	for _ in range(xno):
-		sum([i**2 for i in range(range_no)])
+		sum(i**2 for i in list(range(range_no)))
 
 
 waste_some_time(1)
