@@ -14,17 +14,42 @@ if sys.version_info < (3, 6):
 def readme():
 	""" readme """
 
-	return open('README.md', 'r', encoding='utf-8').read()
+	with open('README.md', 'r', encoding='utf-8') as file:
+		data = file.read().split('\n')
+
+	return data
 
 
 def version():
 	""" version """
 
-	return open('version.properties', 'r', encoding='utf-8').read()
+	ver = None
+	with open('setup.cfg', 'r', encoding='utf-8') as file:
+		data = file.read().split('\n')
 
+	for line in data:
+		if not line:
+			continue
+		lines = line.split('=')
+		if len(lines) != 2:
+			continue
+		name = lines[0].strip()
+		val = lines[1].strip()
+		if name == 'version':
+			ver = val.strip()
 
+	if not ver:
+		raise ValueError('version must be input')
+
+	vers = ver.split('.')
+	if len(vers) != 3:
+		raise ValueError(f'version must be semver.org format, not version={version}')
+
+	return ver
+
+# setuptools
 setuptools.setup(name='logni',\
-  version='0.2.2',\
+  version=version(),\
   author='Erik Brozek',\
   author_email='erik@brozek.name',\
   description='python library for event logging and application states',\

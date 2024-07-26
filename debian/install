@@ -3,3 +3,4 @@ logni/__init__.py usr/share/python3/dist/python-logni
 logni/consolestream.py usr/share/python3/dist/python-logni
 logni/filestream.py usr/share/python3/dist/python-logni
 logni/utilni.py usr/share/python3/dist/python-logni
+logni/cfgni.py usr/share/python3/dist/python-logni
