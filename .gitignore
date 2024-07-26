@@ -1,6 +1,10 @@
+# build
+/build/
+
 # ignore python compile files
 *.pyc
 *.pyo
+*.swp
 
 # debian package
 *.deb
@@ -9,3 +13,12 @@
 *.debhelper.log
 debian/python-logni/*
 debian/python-module-stampdir*
+debian/.debhelper
+
+# pypi
+/dist/
+/logni.egg-info
+.pypirc
+/venv
+
+/test/unit/*.xml
