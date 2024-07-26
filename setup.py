@@ -15,7 +15,7 @@ def readme():
 	""" readme """
 
 	with open('README.md', 'r', encoding='utf-8') as file:
-		data = file.read().split('\n')
+		data = file.read()
 
 	return data
 
